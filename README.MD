@@ -3,7 +3,8 @@
     API RESTful para poder gestionar los vehiculos empresariales del Grupo CR. El grupo esta conformado por dos empresa: Canteras y Ragolia. Cada empresa tiene su flota de vehiculos, aunque se pueden prestar los vehiculos entre sí. 
     La aplicación debe poder gestionar el uso de los vehiculos, quien lo esta usando, los kilometros que tiene, a que empresa pertenece, poder reservarlos, anunciar cuando se este por vencer la VTV, anunciar cuando se debe realizar el service, poder realizar observaciones sobre el vehículo, y solicitar algun tipo de mantenimiento. Se debe poder guardar la información de cuando se cargo nafta (Litros que se hayan cargado y en que kilometraje fue).
 
-### Vehiculos
+### Vehiculo
+
     Cada vehículo debe tener:
     Patente (única); String
     Marca; String
@@ -13,7 +14,6 @@
     verificacionVehicularVigente -> Boolean
     fechaDeVerificacionTecnicaVehicular -> Vencimiento Scheduled tasks - Date
     Departamento;
-    Empleado;
     novedades; List Novedades
     estadoVehiculoEnum; Disponible, en uso, en reparación. Enum
     Reservas - Consultar a Departamento/Empleado;
@@ -21,6 +21,7 @@
     numeroTarjetaYPF; String
 
 ### Empleado
+
     Cada empleado debe tener:
     idEmpleado; Integer
     nombreEmpleado; String
@@ -35,6 +36,7 @@
     pinDeCarga; String
 
 ### Empresa
+
     Cada empresa debe tener:
     idEmpresa; Integer
     nombreEmpresa; String
@@ -44,6 +46,7 @@
     vehiculos; Set
 
 ### Departamento
+
     Cada departamento debe tener:
     idDepartamento; Integer
     nombreDepartamento; String
@@ -51,6 +54,7 @@
     empleados;
 
 ### Reserva
+
     Cada reserva debe tener:
     idReserva; Integer
     vehiculo; 
@@ -59,6 +63,7 @@
     fechaFinalizacion; date
 
 ### Uso
+
     Cada uso debe tener:
     idUso; Integer
     vehiculo;
@@ -66,8 +71,9 @@
     fechaInicio; date
     estadoUso; Enum
     alertaEnviada; Boolean
-    
+
 ### Carga de combustible
+
     Cada cargaDeCombustible debe tener:
     idCarga; Integer
     vehiculo;
@@ -77,6 +83,7 @@
     fecha; -> actualAlCrearLaCarga - DateNow
 
 ### Historial Novedades
+
     Cada historialNovedades debe tener:
     idNovedad; Integer
     vehiculo; 
