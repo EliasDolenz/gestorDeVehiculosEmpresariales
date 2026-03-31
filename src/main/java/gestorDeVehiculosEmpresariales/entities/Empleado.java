@@ -29,7 +29,7 @@ public class Empleado {
     private String apellido;
 
     @NotBlank(message = "El numero de telefono no puede estar vacío")
-    @Column(name = "numero_telefono", nullable = false)
+    @Column(name = "numero_telefono", nullable = false, unique = true)
     private String numeroTelefono;
 
     @NotNull(message = "El departamento no puede ser nulo")
