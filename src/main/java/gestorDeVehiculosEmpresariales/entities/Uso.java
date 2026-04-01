@@ -19,21 +19,25 @@ public class Uso {
     private Long id;
 
     @NotNull(message = "El vehiculo debe estar especificado")
-    @OneToOne
-    @JoinColumn(name = "vehiculo_id", nullable = false, unique = true)
+    @ManyToOne
+    @JoinColumn(name = "vehiculo_id", nullable = false)
     private Vehiculo vehiculo;
 
     @NotNull(message = "El empleado debe estar especificado")
-    @OneToOne
-    @JoinColumn(name = "empleado_id", nullable = false, unique = true)
+    @ManyToOne
+    @JoinColumn(name = "empleado_id", nullable = false)
     private Empleado empleado;
 
     @NotNull(message = "La fecha de inicio debe estar indicada")
     private LocalDateTime fechaInicio;
 
+    private LocalDateTime fechaFinalizacion;
+
     @NotNull(message = "Debe tener un estado de uso")
+    @Enumerated(EnumType.STRING)
     private EstadoVehiculo estadoDeUso = EstadoVehiculo.EN_USO;
 
+    //Esta alertaEnviada sirve para avisar cuando el horario está cerca de una Reserva que ya tenga el vehiculo
     private Boolean alertaEnviada = Boolean.FALSE;
 
 
