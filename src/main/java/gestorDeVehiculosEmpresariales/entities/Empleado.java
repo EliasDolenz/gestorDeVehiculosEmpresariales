@@ -49,7 +49,7 @@ public class Empleado {
     @Column(name = "tiene_registro_conducir", nullable = false)
     private Boolean tieneRegistroConducir;
 
-    @NotNull(message = "Se debe saber la fecha de vencimiento de la licencia del empleado")
+
     @Column(name = "vencimiento_licencia")
     private LocalDate vencimientoLicencia;
 
