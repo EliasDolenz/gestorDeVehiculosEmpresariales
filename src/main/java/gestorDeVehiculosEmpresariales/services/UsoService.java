@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.chrono.ChronoLocalDate;
+import java.util.List;
 
 @Service
 public class UsoService {
@@ -46,5 +47,38 @@ public class UsoService {
         }
 
         return usoRepository.save(unUso);
+    }
+
+    @Transactional
+    public Boolean terminarUso(Long idUso, Integer kmActualizados) {
+        Uso uso = usoRepository.findById(idUso).orElseThrow(() -> new IllegalStateException("Uso no encontrado con id: " + idUso));
+
+        if (uso.getFechaFinalizacion() != null) {
+            throw new IllegalStateException("El uso ya ha sido finalizado.");
+        }
+
+        if (uso.getVehiculo().getEstadoVehiculo() != EstadoVehiculo.EN_USO) {
+            throw new IllegalStateException("El vehículo no está actualmente en uso.");
+        }
+
+        if (uso.getVehiculo().getKmActual() > kmActualizados) {
+            throw new IllegalStateException("Los kilómetros actualizados no pueden ser menores que los kilómetros actuales del vehículo.");
+        }
+
+        uso.setFechaFinalizacion(LocalDateTime.now());
+        uso.getVehiculo().setEstadoVehiculo(EstadoVehiculo.DISPONIBLE);
+        uso.getVehiculo().setKmActual(kmActualizados);
+        usoRepository.save(uso);
+        return Boolean.TRUE;
+    }
+
+    @Transactional
+    public Uso findUsoById(Long idUso) {
+        return usoRepository.findById(idUso).orElseThrow(() -> new IllegalStateException("Uso no encontrado con id: " + idUso));
+    }
+
+    @Transactional
+    public List<Uso> findAllUso() {
+        return usoRepository.findAll();
     }
 }
