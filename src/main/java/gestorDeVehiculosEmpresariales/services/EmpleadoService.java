@@ -25,6 +25,10 @@ public class EmpleadoService {
             logger.warn("El correo electrónico " + unEmpleado.getCorreoElectronico() + " ya está registrado.");
             throw new IllegalArgumentException("El correo electrónico " + unEmpleado.getCorreoElectronico() + " ya está registrado.");
         }
+        if (unEmpleado.getNumeroTelefono() == null) {
+            logger.warn("El número de teléfono no puede ser nulo.");
+            throw new IllegalArgumentException("El número de teléfono no puede ser nulo.");
+        }
         if (unEmpleado.getNumeroTelefono().length() > 10) {
             logger.warn("El número de teléfono " + unEmpleado.getNumeroTelefono() + " no puede tener más de 10 dígitos.");
             throw new IllegalArgumentException("El número de teléfono no puede tener más de 10 dígitos.");
@@ -64,7 +68,10 @@ public class EmpleadoService {
                 throw new IllegalArgumentException("El correo electrónico esta siendo utilizado por otro empleado.");
             }
         }
-
+        if (unEmpleado.getNumeroTelefono() == null) {
+            logger.warn("El número de teléfono no puede ser nulo.");
+            throw new IllegalArgumentException("El número de teléfono no puede ser nulo.");
+        }
         if (!(empleadoExistente.getNumeroTelefono().equals(unEmpleado.getNumeroTelefono()))) {
             if (empleadoRepository.existsByNumeroTelefono(unEmpleado.getNumeroTelefono())) {
                 logger.warn("El número de teléfono " + unEmpleado.getNumeroTelefono() + " ya está registrado por otro empleado.");

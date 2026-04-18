@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 
 @Service
 public class DepartamentoService {
@@ -56,6 +58,46 @@ public class DepartamentoService {
         departamentoRepository.deleteById(idDepartamento);
         logger.info("Departamento con ID " + idDepartamento + " eliminado exitosamente");
         return Boolean.TRUE;
+    }
 
+    @Transactional
+    public Departamento findDepartamentoById(Long idDepartamento) {
+        logger.info("Buscando el departametno con ID: " + idDepartamento);
+        Departamento departamento = this.departamentoRepository.findById(idDepartamento).orElseThrow(() -> {
+            logger.warn("El departamento con ID " + idDepartamento + " no existe");
+            throw new IllegalArgumentException("El departamento con ID " + idDepartamento + " no existe");
+        });
+        logger.info("Departamento con ID " + idDepartamento + " encontrado exitosamente");
+        return departamento;
+    }
+
+    @Transactional
+    public List<Departamento> findAllDepartamentos() {
+        logger.info("Obteniendo todos los departamentos");
+        List<Departamento> departamentos = this.departamentoRepository.findAll();
+        logger.info("Total de departamentos encontrados: " + departamentos.size());
+        return departamentos;
+    }
+
+    @Transactional
+    public Departamento updateDepartamento(Long idDepartamento, Departamento unDepartamento) {
+        logger.info("Actualizando el departamento con ID: " + idDepartamento);
+
+        Departamento departamentoExistente = this.departamentoRepository.findById(idDepartamento).orElseThrow(() -> {
+            logger.warn("El departamento con ID " + idDepartamento + " no existe");
+            throw new IllegalArgumentException("El departamento con ID " + idDepartamento + " no existe");
+        });
+
+        Empresa empresa = empresaRepository.findById(unDepartamento.getEmpresa().getId()).orElseThrow(() -> {
+            logger.warn("La empresa con ID " + unDepartamento.getEmpresa().getId() + " no existe");
+            throw new IllegalArgumentException("La empresa con ID " + unDepartamento.getEmpresa().getId() + " no existe");
+        });
+
+        departamentoExistente.setNombre(unDepartamento.getNombre());
+        departamentoExistente.setEmpresa(empresa);
+
+        Departamento updated = this.departamentoRepository.save(departamentoExistente);
+        logger.info("Departamento con ID " + idDepartamento + " actualizado exitosamente");
+        return updated;
     }
 }

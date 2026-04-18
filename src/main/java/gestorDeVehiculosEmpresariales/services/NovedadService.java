@@ -51,9 +51,18 @@ public class NovedadService {
     }
 
     @Transactional
-    private List<Novedad> getNovedades() {
+    public List<Novedad> getNovedades() {
         logger.info("Obteniendo todas las novedades");
         return this.novedadRepository.findAll();
+    }
+
+    @Transactional
+    public Novedad getNovedadById(Long idNovedad) {
+        logger.info("Obteniendo novedad con id: " + idNovedad);
+        return this.novedadRepository.findById(idNovedad).orElseThrow(() -> {
+            logger.warn("No se encontró la novedad con id: " + idNovedad);
+            throw new IllegalArgumentException("La novedad con id " + idNovedad + " no existe.");
+        });
     }
 
     @Transactional

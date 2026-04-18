@@ -13,7 +13,7 @@ import java.util.List;
 
 @Service
 public class CargaDeCombustibleService {
-    private static final Logger logger = LoggerFactory.getLogger(VehiculoService.class);
+    private static final Logger logger = LoggerFactory.getLogger(CargaDeCombustible.class);
     private final VehiculoRepository vehiculoRepository;
     private final EmpleadoRepository empleadoRepository;
     private final CargaDeCombustibleRepository cargaDeCombustibleRepository;
@@ -112,6 +112,17 @@ public class CargaDeCombustibleService {
         CargaDeCombustible update = cargaDeCombustibleRepository.save(cargaExistente);
         logger.info("Carga de combustible actualizada exitosamente con id: " + update.getId());
         return update;
+    }
 
+    @Transactional
+    public Boolean deleteCargaById(Long idCarga) {
+        logger.info("Eliminando carga de combustible con id: " + idCarga);
+        if (!cargaDeCombustibleRepository.existsById(idCarga)) {
+            logger.warn("No se encontró la carga de combustible con id: " + idCarga);
+            throw new RuntimeException("No se encontró la carga de combustible con id: " + idCarga);
+        }
+        cargaDeCombustibleRepository.deleteById(idCarga);
+        logger.info("Carga de combustible con id: " + idCarga + " eliminada exitosamente.");
+        return Boolean.TRUE;
     }
 }
