@@ -5,6 +5,7 @@ import gestorDeVehiculosEmpresariales.entities.EstadoVehiculo;
 import gestorDeVehiculosEmpresariales.entities.Uso;
 import gestorDeVehiculosEmpresariales.entities.Vehiculo;
 import gestorDeVehiculosEmpresariales.repositories.EmpleadoRepository;
+import gestorDeVehiculosEmpresariales.repositories.ReservaRepository;
 import gestorDeVehiculosEmpresariales.repositories.UsoRepository;
 import gestorDeVehiculosEmpresariales.repositories.VehiculoRepository;
 import org.slf4j.Logger;
@@ -22,11 +23,13 @@ public class UsoService {
     private final EmpleadoRepository empleadoRepository;
     private final VehiculoRepository vehiculoRepository;
     private final UsoRepository usoRepository;
+    private final ReservaRepository reservaRepository;
 
-    public UsoService(EmpleadoRepository empleadoRepository, VehiculoRepository vehiculoRepository, UsoRepository usoRepository) {
+    public UsoService(EmpleadoRepository empleadoRepository, VehiculoRepository vehiculoRepository, UsoRepository usoRepository, ReservaRepository reservaRepository) {
         this.empleadoRepository = empleadoRepository;
         this.vehiculoRepository = vehiculoRepository;
         this.usoRepository = usoRepository;
+        this.reservaRepository = reservaRepository;
     }
 
     @Transactional
@@ -42,6 +45,11 @@ public class UsoService {
             logger.warn("Empleado no encontrado con id: " + unUso.getEmpleado().getId());
             throw new IllegalStateException("Empleado no encontrado con id: " + unUso.getEmpleado().getId());
         });
+
+        if (reservaRepository.existsOverlapping(vehiculoReal.getId(), unUso.getFechaInicio(), unUso.getFechaFinalizacion().plusHours(1))) {
+            logger.warn("El vehículo con id: " + unUso.getVehiculo().getId() + " tiene una reserva que se superpone con el período de uso solicitado.");
+            throw new IllegalStateException("El vehículo tiene una reserva que se superpone con el período de uso solicitado.");
+        }
 
         if (vehiculoReal.getEstadoVehiculo() != EstadoVehiculo.DISPONIBLE) {
             logger.warn("El vehículo con id: " + unUso.getVehiculo().getId() + " no está disponible para su uso. Estado actual: " + vehiculoReal.getEstadoVehiculo());

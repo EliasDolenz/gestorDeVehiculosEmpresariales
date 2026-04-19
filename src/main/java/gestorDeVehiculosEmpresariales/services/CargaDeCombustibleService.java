@@ -54,12 +54,20 @@ public class CargaDeCombustibleService {
             throw new RuntimeException("No se encontró el empleado con id: " + cargaDeCombustible.getEmpleado().getId());
         });
 
+        if (vehiculoReal.getEstadoVehiculo() == EstadoVehiculo.EN_REPARACION) {
+            logger.warn("No se puede cargar combustible a un vehículo que se encuentra en reparación");
+            throw new RuntimeException("No se puede cargar combustible a un vehículo que se encuentra en reparación");
+        }
+
         if (cargaDeCombustible.getKmVehiculo() <= vehiculoReal.getKmActual()) {
             logger.warn("El kilometraje de carga (" + cargaDeCombustible.getKmVehiculo() + ") debe ser mayor al actual (" + vehiculoReal.getKmActual() + ")");
             throw new RuntimeException("El kilometraje de carga debe ser mayor al actual (" + vehiculoReal.getKmActual() + ")");
         }
+
+
         vehiculoReal.setKmActual(cargaDeCombustible.getKmVehiculo());
         vehiculoReal.setNivelCombustible(Combustible.LLENO);
+        vehiculoRepository.save(vehiculoReal);
         cargaDeCombustible.setVehiculo(vehiculoReal);
         cargaDeCombustible.setEmpleado(empleadoReal);
         cargaDeCombustible.setFechaRecarga(java.time.LocalDateTime.now());
@@ -109,6 +117,7 @@ public class CargaDeCombustibleService {
         cargaExistente.setVehiculo(vehiculoReal);
         cargaExistente.setCantidadLitros(carga.getCantidadLitros());
         cargaExistente.setKmVehiculo(carga.getKmVehiculo());
+        vehiculoRepository.save(vehiculoReal);
         CargaDeCombustible update = cargaDeCombustibleRepository.save(cargaExistente);
         logger.info("Carga de combustible actualizada exitosamente con id: " + update.getId());
         return update;

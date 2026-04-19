@@ -1,7 +1,10 @@
 package gestorDeVehiculosEmpresariales.services;
 
+import gestorDeVehiculosEmpresariales.entities.Empleado;
+import gestorDeVehiculosEmpresariales.entities.EstadoVehiculo;
 import gestorDeVehiculosEmpresariales.entities.Reserva;
 import gestorDeVehiculosEmpresariales.entities.Vehiculo;
+import gestorDeVehiculosEmpresariales.repositories.EmpleadoRepository;
 import gestorDeVehiculosEmpresariales.repositories.ReservaRepository;
 import gestorDeVehiculosEmpresariales.repositories.VehiculoRepository;
 import org.slf4j.Logger;
@@ -17,20 +20,32 @@ public class ReservaService {
     private static final Logger logger = LoggerFactory.getLogger(ReservaService.class);
     private final ReservaRepository reservaRepository;
     private final VehiculoRepository vehiculoRepository;
+    private final EmpleadoRepository empleadoRepository;
 
-    public ReservaService(ReservaRepository reservaRepository, VehiculoRepository vehiculoRepository) {
+    public ReservaService(ReservaRepository reservaRepository, VehiculoRepository vehiculoRepository, EmpleadoRepository empleadoRepository) {
         this.reservaRepository = reservaRepository;
         this.vehiculoRepository = vehiculoRepository;
+        this.empleadoRepository = empleadoRepository;
     }
 
     @Transactional
     public Reserva saveReserva(Reserva unaReserva) {
         logger.info("Guardando nueva reserva para el vehículo con id: " + unaReserva.getVehiculo().getId());
 
+        Empleado empleadoExistente = empleadoRepository.findById(unaReserva.getEmpleado().getId()).orElseThrow(() -> {
+            logger.warn("No se encontró el empleado con id: " + unaReserva.getEmpleado().getId());
+            throw new IllegalArgumentException("El empleado con id " + unaReserva.getEmpleado().getId() + " no existe.");
+        });
+
         Vehiculo vehiculoExistente = vehiculoRepository.findById(unaReserva.getVehiculo().getId()).orElseThrow(() -> {
             logger.warn("No se encontró el vehículo con id: " + unaReserva.getVehiculo().getId());
             throw new IllegalArgumentException("El vehículo con id " + unaReserva.getVehiculo().getId() + " no existe.");
         });
+
+        if (vehiculoExistente.getEstadoVehiculo() == EstadoVehiculo.EN_REPARACION) {
+            logger.warn("El vehículo con id " + vehiculoExistente.getId() + " está en reparación y no puede ser reservado.");
+            throw new IllegalArgumentException("El vehículo está en reparación y no puede ser reservado.");
+        }
 
         if (reservaRepository.existsOverlapping(vehiculoExistente.getId(), unaReserva.getFechaDeInicio(), unaReserva.getFechaDeFinalizacion())) {
             logger.warn("El vehículo con id " + vehiculoExistente.getId() + " ya está reservado para el período indicado.");
@@ -86,6 +101,11 @@ public class ReservaService {
             throw new IllegalArgumentException("El vehículo con id " + unaReserva.getVehiculo().getId() + " no existe.");
         });
 
+        Empleado empleadoExistente = empleadoRepository.findById(unaReserva.getEmpleado().getId()).orElseThrow(() -> {
+            logger.warn("El empleado con id " + unaReserva.getEmpleado().getId() + " no existe.");
+            throw new IllegalArgumentException("El empleado con id " + unaReserva.getEmpleado().getId() + " no existe.");
+        });
+
         if (reservaRepository.existsOverlappingExcludingSelf(vehiculoExistente.getId(), idReserva, unaReserva.getFechaDeInicio(), unaReserva.getFechaDeFinalizacion())) {
             logger.warn("El vehículo con id " + vehiculoExistente.getId() + " ya está reservado para el período indicado.");
             throw new IllegalArgumentException("El vehículo ya está reservado para el período indicado.");
@@ -105,8 +125,8 @@ public class ReservaService {
         reservaExistente.setFechaDeInicio(unaReserva.getFechaDeInicio());
         reservaExistente.setFechaDeFinalizacion(unaReserva.getFechaDeFinalizacion());
 
-        reservaRepository.save(reservaExistente);
+        Reserva saved = reservaRepository.save(reservaExistente);
         logger.info("Reserva con id " + idReserva + " actualizada exitosamente.");
-        return reservaExistente;
+        return saved;
     }
 }

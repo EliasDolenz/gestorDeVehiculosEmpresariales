@@ -109,6 +109,18 @@ public class EmpleadoService {
     }
 
     @Transactional
+    public List<Empleado> findEmpleadosByIdEmpresa(Long idEmpresa) {
+        logger.info("Obteniendo lista de empleados para la empresa con id: " + idEmpresa);
+        return empleadoRepository.findByEmpresaId(idEmpresa);
+    }
+
+    @Transactional
+    public List<Empleado> findEmpleadosByIdDepartamento(Long idDepartamento) {
+        logger.info("Obteniendo lista de empleados para el departamento con id: " + idDepartamento);
+        return empleadoRepository.findByDepartamentoId(idDepartamento);
+    }
+
+    @Transactional
     public Boolean deleteEmpleadoById(Long idEmpleado) {
         logger.info("Eliminando empleado con id: " + idEmpleado);
         if (empleadoRepository.existsById(idEmpleado)) {

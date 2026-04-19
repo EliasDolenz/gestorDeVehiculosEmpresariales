@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -53,7 +54,8 @@ public class Vehiculo {
     private LocalDate vencimientoVtv;
 
     @NotNull(message = "Debe indicar a que departamento pertenece el vehiculo")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "departamento_id")
     private Departamento departamento;
 
     @OneToMany(mappedBy = "vehiculo")
@@ -72,4 +74,13 @@ public class Vehiculo {
     @NotBlank(message = "El numero de la tarjeta no puede estar vacio")
     @Column(name = "numero_tarjeta_ypf", nullable = false)
     private String numeroTarjetaYPF;
+
+    @OneToMany(mappedBy = "vehiculo")
+    private Set<Reserva> reservas = new HashSet<>();
+
+    @OneToMany(mappedBy = "vehiculo")
+    private Set<Uso> usos = new HashSet<>();
+
+    @OneToMany(mappedBy = "vehiculo")
+    private Set<CargaDeCombustible> cargasDeCombustible = new HashSet<>();
 }

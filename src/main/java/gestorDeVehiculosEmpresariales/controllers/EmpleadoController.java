@@ -31,6 +31,18 @@ public class EmpleadoController {
         return ResponseEntity.ok(Empleados);
     }
 
+    @GetMapping("/por-empresa/{idEmpresa}")
+    public ResponseEntity<List<Empleado>> getEmpleadosByEmpresaId(@PathVariable Long idEmpresa) {
+        List<Empleado> empleados = this.empleadoService.findEmpleadosByIdEmpresa(idEmpresa);
+        return ResponseEntity.ok(empleados);
+    }
+
+    @GetMapping("/por-departamento/{idDepartamento}")
+    public ResponseEntity<List<Empleado>> getEmpleadosByDepartamentoId(@PathVariable Long idDepartamento) {
+        List<Empleado> empleados = this.empleadoService.findEmpleadosByIdDepartamento(idDepartamento);
+        return ResponseEntity.ok(empleados);
+    }
+
     @PutMapping("/{idEmpleado}")
     public ResponseEntity<Empleado> updateEmpleado(@PathVariable Long idEmpleado, @Valid @RequestBody Empleado unEmpleado) {
         Empleado EmpleadoActualizado = this.empleadoService.updateEmpleado(idEmpleado, unEmpleado);

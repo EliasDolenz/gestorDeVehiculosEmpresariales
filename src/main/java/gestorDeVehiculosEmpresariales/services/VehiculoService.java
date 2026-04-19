@@ -1,5 +1,6 @@
 package gestorDeVehiculosEmpresariales.services;
 
+import gestorDeVehiculosEmpresariales.entities.EstadoVehiculo;
 import gestorDeVehiculosEmpresariales.entities.Vehiculo;
 import gestorDeVehiculosEmpresariales.repositories.VehiculoRepository;
 import org.slf4j.Logger;
@@ -90,6 +91,22 @@ public class VehiculoService {
         });
         logger.info("Vehículo con id " + idVehiculo + " encontrado exitosamente.");
         return vehiculoExistente;
+    }
+
+    @Transactional
+    public List<Vehiculo> findVehiculosByDepartamentoId(Long idDepartamento) {
+        logger.info("Buscando vehículos del departamento con id: " + idDepartamento);
+        List<Vehiculo> vehiculos = vehiculoRepository.findByDepartamentoId(idDepartamento);
+        logger.info("Se encontraron " + vehiculos.size() + " vehículos para el departamento con id: " + idDepartamento);
+        return vehiculos;
+    }
+
+    @Transactional
+    public List<Vehiculo> findVehiculosByEstado(EstadoVehiculo estadoVehiculo) {
+        logger.info("Buscando vehículos con estado: " + estadoVehiculo);
+        List<Vehiculo> vehiculos = vehiculoRepository.findByEstadoVehicular(estadoVehiculo);
+        logger.info("Se encontraron " + vehiculos.size() + " vehículos con estado: " + estadoVehiculo);
+        return vehiculos;
     }
 
     @Transactional

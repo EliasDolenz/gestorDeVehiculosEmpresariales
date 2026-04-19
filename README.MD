@@ -16,7 +16,6 @@
     Departamento;
     novedades; List Novedades
     estadoVehiculoEnum; Disponible, en uso, en reparación. Enum
-    Reservas - Consultar a Departamento/Empleado;
     combustible; ENUM -> Reserva, 1/4, 1/2, 3/4, lleno.
     numeroTarjetaYPF; String
 
@@ -42,8 +41,6 @@
     nombreEmpresa; String
     direccionEmpresa; String
     departamentos; Set
-    empleados; Set
-    vehiculos; Set
 
 ### Departamento
 

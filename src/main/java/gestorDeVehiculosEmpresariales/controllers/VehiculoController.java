@@ -1,5 +1,6 @@
 package gestorDeVehiculosEmpresariales.controllers;
 
+import gestorDeVehiculosEmpresariales.entities.EstadoVehiculo;
 import gestorDeVehiculosEmpresariales.entities.Vehiculo;
 import gestorDeVehiculosEmpresariales.services.VehiculoService;
 import jakarta.validation.Valid;
@@ -15,7 +16,7 @@ import java.util.List;
 public class VehiculoController {
     private final VehiculoService vehiculoService;
 
-    public VehiculoController(VehiculoService vehiculoService){
+    public VehiculoController(VehiculoService vehiculoService) {
         this.vehiculoService = vehiculoService;
     }
 
@@ -29,6 +30,18 @@ public class VehiculoController {
     public ResponseEntity<Vehiculo> getVehiculoById(@PathVariable Long idVehiculo) {
         Vehiculo vehiculo = this.vehiculoService.findVehiculoById(idVehiculo);
         return ResponseEntity.ok(vehiculo);
+    }
+
+    @GetMapping("/por-departamentos/{idDepartamento}")
+    public ResponseEntity<List<Vehiculo>> getVehiculosByDepartamentoId(@PathVariable Long idDepartamento) {
+        List<Vehiculo> vehiculos = this.vehiculoService.findVehiculosByDepartamentoId(idDepartamento);
+        return ResponseEntity.ok(vehiculos);
+    }
+
+    @GetMapping("/disponibles")
+    public ResponseEntity<List<Vehiculo>> getVehiculosDisponibles() {
+        List<Vehiculo> vehiculos = this.vehiculoService.findVehiculosByEstado(EstadoVehiculo.DISPONIBLE);
+        return ResponseEntity.ok(vehiculos);
     }
 
     @PostMapping
