@@ -28,4 +28,9 @@ public class Reserva {
 
     @NotNull(message = "Indicar en que día y horario termina la reserva")
     private LocalDateTime fechaDeFinalizacion;
+
+    @NotNull(message = "Se debe indicar el empleado que realiza la reserva")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "empleado_id", nullable = false)
+    private Empleado empleado;
 }

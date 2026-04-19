@@ -35,7 +35,7 @@ public class Uso {
 
     @NotNull(message = "Debe tener un estado de uso")
     @Enumerated(EnumType.STRING)
-    private EstadoVehiculo estadoDeUso = EstadoVehiculo.EN_USO;
+    private EstadoUso estadoDeUso = EstadoUso.INICIADO;
 
     //Esta alertaEnviada sirve para avisar cuando el horario está cerca de una Reserva que ya tenga el vehiculo
     private Boolean alertaEnviada = Boolean.FALSE;

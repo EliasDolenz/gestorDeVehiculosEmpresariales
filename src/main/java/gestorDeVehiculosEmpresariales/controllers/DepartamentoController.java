@@ -11,7 +11,7 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/departamento")
+@RequestMapping("/api/departamentos")
 public class DepartamentoController {
     private final DepartamentoService departamentoService;
 

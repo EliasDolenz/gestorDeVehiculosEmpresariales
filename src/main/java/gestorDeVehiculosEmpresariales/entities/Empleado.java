@@ -56,4 +56,9 @@ public class Empleado {
     @NotBlank(message = "El pin de carga no puede estar vacio")
     @Column(name = "pin_carga", nullable = false)
     private String pinCarga;
+
+    @NotNull(message = "La empresa del empleado no puede ser nula")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "empresa_id", nullable = false)
+    private Empresa empresa;
 }

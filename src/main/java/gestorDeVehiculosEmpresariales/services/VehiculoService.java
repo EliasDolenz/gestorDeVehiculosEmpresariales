@@ -82,6 +82,17 @@ public class VehiculoService {
     }
 
     @Transactional
+    public Vehiculo findVehiculoById(Long idVehiculo) {
+        logger.info("Buscando vehículo con id: " + idVehiculo);
+        Vehiculo vehiculoExistente = vehiculoRepository.findById(idVehiculo).orElseThrow(() -> {
+            logger.warn("El vehículo con id " + idVehiculo + " no existe.");
+            throw new IllegalArgumentException("El vehículo con id " + idVehiculo + " no existe.");
+        });
+        logger.info("Vehículo con id " + idVehiculo + " encontrado exitosamente.");
+        return vehiculoExistente;
+    }
+
+    @Transactional
     public Boolean deleteVehiculoById(Long idVehiculo) {
         logger.info("Eliminando vehículo con id: " + idVehiculo);
 
@@ -91,7 +102,6 @@ public class VehiculoService {
                     throw new IllegalArgumentException("El vehículo con id " + idVehiculo + " no existe.");
                 }
         );
-
 
         if (!vehiculoAEliminar.getNovedades().isEmpty()) {
             logger.warn("Intento de eliminar el vehículo con id " + idVehiculo + " que tiene historial de novedades. Cantidad de novedades: " + vehiculoAEliminar.getNovedades().size());
