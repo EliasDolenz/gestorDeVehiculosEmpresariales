@@ -15,5 +15,5 @@ public interface VehiculoRepository extends JpaRepository<Vehiculo, Long> {
 
     List<Vehiculo> findByDepartamentoId(Long departamentoID);
 
-    List<Vehiculo> findByEstadoVehicular(EstadoVehiculo estadoVehiculo);
+    List<Vehiculo> findByEstadoVehiculo(EstadoVehiculo estadoVehiculo);
 }

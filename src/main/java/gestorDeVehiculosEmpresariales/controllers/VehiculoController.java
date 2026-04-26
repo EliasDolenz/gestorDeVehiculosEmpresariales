@@ -1,5 +1,9 @@
 package gestorDeVehiculosEmpresariales.controllers;
 
+import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoCreateDTO;
+import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoResponseDTO;
+import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoSimpleDTO;
+import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoUpdateDTO;
 import gestorDeVehiculosEmpresariales.entities.EstadoVehiculo;
 import gestorDeVehiculosEmpresariales.entities.Vehiculo;
 import gestorDeVehiculosEmpresariales.services.VehiculoService;
@@ -21,39 +25,39 @@ public class VehiculoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Vehiculo>> getAllVehiculos() {
-        List<Vehiculo> vehiculos = this.vehiculoService.findAllVehiculos();
+    public ResponseEntity<List<VehiculoSimpleDTO>> getAllVehiculos() {
+        List<VehiculoSimpleDTO> vehiculos = this.vehiculoService.findAllVehiculos();
         return ResponseEntity.ok(vehiculos);
     }
 
     @GetMapping("/{idVehiculo}")
-    public ResponseEntity<Vehiculo> getVehiculoById(@PathVariable Long idVehiculo) {
-        Vehiculo vehiculo = this.vehiculoService.findVehiculoById(idVehiculo);
+    public ResponseEntity<VehiculoResponseDTO> getVehiculoById(@PathVariable Long idVehiculo) {
+        VehiculoResponseDTO vehiculo = this.vehiculoService.findVehiculoById(idVehiculo);
         return ResponseEntity.ok(vehiculo);
     }
 
     @GetMapping("/por-departamentos/{idDepartamento}")
-    public ResponseEntity<List<Vehiculo>> getVehiculosByDepartamentoId(@PathVariable Long idDepartamento) {
-        List<Vehiculo> vehiculos = this.vehiculoService.findVehiculosByDepartamentoId(idDepartamento);
+    public ResponseEntity<List<VehiculoSimpleDTO>> getVehiculosByDepartamentoId(@PathVariable Long idDepartamento) {
+        List<VehiculoSimpleDTO> vehiculos = this.vehiculoService.findVehiculosByDepartamentoId(idDepartamento);
         return ResponseEntity.ok(vehiculos);
     }
 
     @GetMapping("/disponibles")
-    public ResponseEntity<List<Vehiculo>> getVehiculosDisponibles() {
-        List<Vehiculo> vehiculos = this.vehiculoService.findVehiculosByEstado(EstadoVehiculo.DISPONIBLE);
+    public ResponseEntity<List<VehiculoSimpleDTO>> getVehiculosDisponibles() {
+        List<VehiculoSimpleDTO> vehiculos = this.vehiculoService.findVehiculosByEstado(EstadoVehiculo.DISPONIBLE);
         return ResponseEntity.ok(vehiculos);
     }
 
     @PostMapping
-    public ResponseEntity<Vehiculo> createVehiculo(@Valid @RequestBody Vehiculo unVehiculo) {
-        Vehiculo vehiculoNuevo = this.vehiculoService.saveVehiculo(unVehiculo);
+    public ResponseEntity<Vehiculo> createVehiculo(@Valid @RequestBody VehiculoCreateDTO unVehiculoDTO) {
+        Vehiculo vehiculoNuevo = this.vehiculoService.saveVehiculo(unVehiculoDTO);
         URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(vehiculoNuevo.getId()).toUri();
         return ResponseEntity.created(location).body(vehiculoNuevo);
     }
 
     @PutMapping("/{idVehiculo}")
-    public ResponseEntity<Vehiculo> updateVehiculo(@PathVariable Long idVehiculo, @Valid @RequestBody Vehiculo unVehiculo) {
-        Vehiculo vehiculoActualizado = this.vehiculoService.updateVehiculo(idVehiculo, unVehiculo);
+    public ResponseEntity<Vehiculo> updateVehiculo(@PathVariable Long idVehiculo, @Valid @RequestBody VehiculoUpdateDTO unVehiculoDTO) {
+        Vehiculo vehiculoActualizado = this.vehiculoService.updateVehiculo(idVehiculo, unVehiculoDTO);
         return ResponseEntity.ok(vehiculoActualizado);
     }
 
