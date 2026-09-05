@@ -1,5 +1,6 @@
 package gestorDeVehiculosEmpresariales.dto.departamento;
 
+import gestorDeVehiculosEmpresariales.dto.empleado.EmpleadoSimpleDTO;
 import gestorDeVehiculosEmpresariales.dto.empresa.EmpresaSimpleDTO;
 import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoSimpleDTO;
 

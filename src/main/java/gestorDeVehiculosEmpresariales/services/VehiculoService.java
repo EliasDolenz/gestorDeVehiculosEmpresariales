@@ -138,9 +138,9 @@ public class VehiculoService {
     }
 
     @Transactional
-    public List<Vehiculo> findVehiculosByDepartamentoId(Long idDepartamento) {
+    public List<VehiculoSimpleDTO> findVehiculosByDepartamentoId(Long idDepartamento) {
         logger.info("Buscando vehículos del departamento con id: " + idDepartamento);
-        List<Vehiculo> vehiculos = vehiculoRepository.findByDepartamentoId(idDepartamento);
+        List<VehiculoSimpleDTO> vehiculos = vehiculoRepository.findByDepartamentoId(idDepartamento);
         logger.info("Se encontraron " + vehiculos.size() + " vehículos para el departamento con id: " + idDepartamento);
         return vehiculos;
     }

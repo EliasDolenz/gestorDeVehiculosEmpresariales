@@ -1,5 +1,6 @@
 package gestorDeVehiculosEmpresariales.dto.reserva;
 
+import gestorDeVehiculosEmpresariales.dto.empleado.EmpleadoSimpleDTO;
 import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoSimpleDTO;
 
 import java.time.LocalDateTime;

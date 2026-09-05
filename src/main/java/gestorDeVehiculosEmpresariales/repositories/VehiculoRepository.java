@@ -1,5 +1,6 @@
 package gestorDeVehiculosEmpresariales.repositories;
 
+import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoSimpleDTO;
 import gestorDeVehiculosEmpresariales.entities.EstadoVehiculo;
 import gestorDeVehiculosEmpresariales.entities.Vehiculo;
 import jakarta.validation.constraints.NotBlank;
@@ -13,7 +14,7 @@ public interface VehiculoRepository extends JpaRepository<Vehiculo, Long> {
 
     Boolean existsByPatente(@NotBlank(message = "La patente no puede estar vacía") String patente);
 
-    List<Vehiculo> findByDepartamentoId(Long departamentoID);
+    List<VehiculoSimpleDTO> findByDepartamentoId(Long departamentoID);
 
     List<Vehiculo> findByEstadoVehiculo(EstadoVehiculo estadoVehiculo);
 }

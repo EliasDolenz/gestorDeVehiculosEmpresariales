@@ -1,5 +1,6 @@
 package gestorDeVehiculosEmpresariales.dto.novedad;
 
+import gestorDeVehiculosEmpresariales.dto.empleado.EmpleadoSimpleDTO;
 import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoSimpleDTO;
 import gestorDeVehiculosEmpresariales.entities.EstadoNovedad;
 import gestorDeVehiculosEmpresariales.entities.Urgencia;
