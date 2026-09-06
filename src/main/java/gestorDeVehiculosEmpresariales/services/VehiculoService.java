@@ -7,6 +7,7 @@ import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoUpdateDTO;
 import gestorDeVehiculosEmpresariales.entities.Departamento;
 import gestorDeVehiculosEmpresariales.entities.EstadoVehiculo;
 import gestorDeVehiculosEmpresariales.entities.Vehiculo;
+import gestorDeVehiculosEmpresariales.mappers.VehiculoMapper;
 import gestorDeVehiculosEmpresariales.repositories.DepartamentoRepository;
 import gestorDeVehiculosEmpresariales.repositories.VehiculoRepository;
 import org.slf4j.Logger;
@@ -28,7 +29,7 @@ public class VehiculoService {
     }
 
     @Transactional
-    public Vehiculo saveVehiculo(VehiculoCreateDTO vehiculoDTO) {
+    public VehiculoResponseDTO saveVehiculo(VehiculoCreateDTO vehiculoDTO) {
         logger.info("Guardando nuevo vehículo con patente: " + vehiculoDTO.patente());
         if (vehiculoRepository.existsByPatente(vehiculoDTO.patente())) {
             logger.warn("El vehículo con patente " + vehiculoDTO.patente() + " ya existe.");
@@ -62,11 +63,11 @@ public class VehiculoService {
         }
         Vehiculo saved = vehiculoRepository.save(vehiculo);
         logger.info("Vehículo guardado exitosamente con id: " + saved.getId());
-        return saved;
+        return VehiculoMapper.toResponseDTO(saved);
     }
 
     @Transactional
-    public Vehiculo updateVehiculo(Long idVehiculo, VehiculoUpdateDTO unVehiculoDTO) {
+    public VehiculoResponseDTO updateVehiculo(Long idVehiculo, VehiculoUpdateDTO unVehiculoDTO) {
         logger.info("Actualizando vehículo con id: " + idVehiculo);
 
         Vehiculo vehiculoExistente = vehiculoRepository.findById(idVehiculo).orElseThrow(() -> {
@@ -85,78 +86,55 @@ public class VehiculoService {
         vehiculoExistente.setVencimientoService(unVehiculoDTO.vencimientoService());
         vehiculoExistente.setVtvVigente(unVehiculoDTO.vtvVigente());
         vehiculoExistente.setVencimientoVtv(unVehiculoDTO.vencimientoVtv());
+        vehiculoExistente.setNivelCombustible(unVehiculoDTO.nivelCombustible());
 
 
         Vehiculo saved = vehiculoRepository.save(vehiculoExistente);
 
         logger.info("Vehículo con id " + idVehiculo + " actualizado exitosamente.");
-        return saved;
+        return VehiculoMapper.toResponseDTO(saved);
 
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<VehiculoSimpleDTO> findAllVehiculos() {
         logger.info("Obteniendo lista de todos los vehículos.");
         List<Vehiculo> vehiculos = vehiculoRepository.findAll();
 
-        List<VehiculoSimpleDTO> dtos = vehiculos.stream().map(v -> new VehiculoSimpleDTO(
-                v.getId(),
-                v.getMarca(),
-                v.getPatente(),
-                v.getModelo(),
-                v.getEstadoVehiculo()
-        )).toList();
+        List<VehiculoSimpleDTO> dtos = vehiculos.stream().map(VehiculoMapper::toSimpleDTO).toList();
         logger.info("Se encontraron " + dtos.size() + " vehículos en total.");
 
         return (dtos);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public VehiculoResponseDTO findVehiculoById(Long idVehiculo) {
         logger.info("Buscando vehículo con id: " + idVehiculo);
         Vehiculo vehiculoExistente = vehiculoRepository.findById(idVehiculo).orElseThrow(() -> {
             logger.warn("El vehículo con id " + idVehiculo + " no existe.");
             throw new IllegalArgumentException("El vehículo con id " + idVehiculo + " no existe.");
         });
-        VehiculoResponseDTO dto = new VehiculoResponseDTO(
-                vehiculoExistente.getId(),
-                vehiculoExistente.getPatente(),
-                vehiculoExistente.getMarca(),
-                vehiculoExistente.getModelo(),
-                vehiculoExistente.getKmActual(),
-                vehiculoExistente.getFechaDeService(),
-                vehiculoExistente.getVencimientoService(),
-                vehiculoExistente.getVtvVigente(),
-                vehiculoExistente.getVencimientoVtv(),
-                vehiculoExistente.getNivelCombustible(),
-                vehiculoExistente.getEstadoVehiculo(),
-                vehiculoExistente.getNumeroTarjetaYPF()
-
-        );
+        VehiculoResponseDTO dto = VehiculoMapper.toResponseDTO(vehiculoExistente);
         logger.info("Vehículo con id " + idVehiculo + " encontrado exitosamente.");
         return dto;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<VehiculoSimpleDTO> findVehiculosByDepartamentoId(Long idDepartamento) {
         logger.info("Buscando vehículos del departamento con id: " + idDepartamento);
-        List<VehiculoSimpleDTO> vehiculos = vehiculoRepository.findByDepartamentoId(idDepartamento);
+        List<Vehiculo> vehiculos = vehiculoRepository.findByDepartamentoId(idDepartamento);
+
+        List<VehiculoSimpleDTO> dtos = vehiculos.stream().map(VehiculoMapper::toSimpleDTO).toList();
         logger.info("Se encontraron " + vehiculos.size() + " vehículos para el departamento con id: " + idDepartamento);
-        return vehiculos;
+        return dtos;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<VehiculoSimpleDTO> findVehiculosByEstado(EstadoVehiculo estadoVehiculo) {
         logger.info("Buscando vehículos con estado: " + estadoVehiculo);
         List<Vehiculo> vehiculos = vehiculoRepository.findByEstadoVehiculo(estadoVehiculo);
 
-        List<VehiculoSimpleDTO> dtos = vehiculos.stream().map(v -> new VehiculoSimpleDTO(
-                v.getId(),
-                v.getMarca(),
-                v.getPatente(),
-                v.getModelo(),
-                v.getEstadoVehiculo()
-        )).toList();
+        List<VehiculoSimpleDTO> dtos = vehiculos.stream().map(VehiculoMapper::toSimpleDTO).toList();
         logger.info("Se encontraron " + vehiculos.size() + " vehículos con estado: " + estadoVehiculo);
         return dtos;
     }
@@ -165,24 +143,18 @@ public class VehiculoService {
     public Boolean deleteVehiculoById(Long idVehiculo) {
         logger.info("Eliminando vehículo con id: " + idVehiculo);
 
-        Vehiculo vehiculoAEliminar = vehiculoRepository.findById(idVehiculo).orElseThrow(
-                () -> {
-                    logger.warn("El vehículo con id " + idVehiculo + " no existe.");
-                    throw new IllegalArgumentException("El vehículo con id " + idVehiculo + " no existe.");
-                }
-        );
+        Vehiculo vehiculoAEliminar = vehiculoRepository.findById(idVehiculo).orElseThrow(() -> {
+            logger.warn("El vehículo con id " + idVehiculo + " no existe.");
+            throw new IllegalArgumentException("El vehículo con id " + idVehiculo + " no existe.");
+        });
 
         if (!vehiculoAEliminar.getNovedades().isEmpty()) {
             logger.warn("Intento de eliminar el vehículo con id " + idVehiculo + " que tiene historial de novedades. Cantidad de novedades: " + vehiculoAEliminar.getNovedades().size());
-            throw new IllegalArgumentException(
-                    "No se puede eliminar el vehículo con id " + idVehiculo + " porque tiene historial de novedades."
-            );
+            throw new IllegalArgumentException("No se puede eliminar el vehículo con id " + idVehiculo + " porque tiene historial de novedades.");
         }
 
         vehiculoRepository.deleteById(idVehiculo);
         logger.info("Vehículo con id " + idVehiculo + " eliminado exitosamente.");
         return Boolean.TRUE;
     }
-
-
 }

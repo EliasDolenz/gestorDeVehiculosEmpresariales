@@ -5,7 +5,6 @@ import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoResponseDTO;
 import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoSimpleDTO;
 import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoUpdateDTO;
 import gestorDeVehiculosEmpresariales.entities.EstadoVehiculo;
-import gestorDeVehiculosEmpresariales.entities.Vehiculo;
 import gestorDeVehiculosEmpresariales.services.VehiculoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -49,15 +48,15 @@ public class VehiculoController {
     }
 
     @PostMapping
-    public ResponseEntity<Vehiculo> createVehiculo(@Valid @RequestBody VehiculoCreateDTO unVehiculoDTO) {
-        Vehiculo vehiculoNuevo = this.vehiculoService.saveVehiculo(unVehiculoDTO);
-        URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(vehiculoNuevo.getId()).toUri();
+    public ResponseEntity<VehiculoResponseDTO> createVehiculo(@Valid @RequestBody VehiculoCreateDTO unVehiculoDTO) {
+        VehiculoResponseDTO vehiculoNuevo = this.vehiculoService.saveVehiculo(unVehiculoDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(vehiculoNuevo.id()).toUri();
         return ResponseEntity.created(location).body(vehiculoNuevo);
     }
 
     @PutMapping("/{idVehiculo}")
-    public ResponseEntity<Vehiculo> updateVehiculo(@PathVariable Long idVehiculo, @Valid @RequestBody VehiculoUpdateDTO unVehiculoDTO) {
-        Vehiculo vehiculoActualizado = this.vehiculoService.updateVehiculo(idVehiculo, unVehiculoDTO);
+    public ResponseEntity<VehiculoResponseDTO> updateVehiculo(@PathVariable Long idVehiculo, @Valid @RequestBody VehiculoUpdateDTO unVehiculoDTO) {
+        VehiculoResponseDTO vehiculoActualizado = this.vehiculoService.updateVehiculo(idVehiculo, unVehiculoDTO);
         return ResponseEntity.ok(vehiculoActualizado);
     }
 
