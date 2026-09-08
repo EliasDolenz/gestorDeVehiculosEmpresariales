@@ -2,6 +2,8 @@ package gestorDeVehiculosEmpresariales.dto.empleado;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+
 
 import java.time.LocalDate;
 
@@ -9,6 +11,7 @@ public record EmpleadoCreateDTO(
         @NotBlank(message = "El nombre del empleado no puede estar vacío") String nombre,
         @NotBlank(message = "El apellido del empleado no puede estar vacío") String apellido,
         @NotBlank(message = "El número de teléfono del empleado no puede estar vacío")
+        @Pattern(regexp = "\\d{10}", message = "El número de teléfono debe tener exactamente 10 dígitos")
         String numeroTelefono,
         @NotNull(message = "El departamentoId del empleado no puede ser nulo")
         Long departamentoId,
@@ -18,9 +21,9 @@ public record EmpleadoCreateDTO(
         String puesto,
         @NotNull(message = "El campo tieneRegistroConducir del empleado no puede ser nulo")
         Boolean tieneRegistroConducir,
-        @NotBlank(message = "El vencimiento de la licencia del empleado no puede estar vacío")
         LocalDate vencimientoLicencia,
         @NotBlank(message = "El pin de carga del empleado no puede estar vacío")
+        @Pattern(regexp = "\\d{4}", message = "El pin de carga debe tener exactamente 4 dígitos")
         String pinCarga,
         @NotNull(message = "El empresaId del empleado no puede ser nulo")
         Long empresaId

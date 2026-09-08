@@ -1,7 +1,14 @@
 package gestorDeVehiculosEmpresariales.services;
 
+import gestorDeVehiculosEmpresariales.dto.empleado.EmpleadoCreateDTO;
+import gestorDeVehiculosEmpresariales.dto.empleado.EmpleadoResponseDTO;
+import gestorDeVehiculosEmpresariales.dto.empleado.EmpleadoSimpleDTO;
+import gestorDeVehiculosEmpresariales.dto.empleado.EmpleadoUpdateDTO;
 import gestorDeVehiculosEmpresariales.entities.Empleado;
+import gestorDeVehiculosEmpresariales.mappers.EmpleadoMapper;
+import gestorDeVehiculosEmpresariales.repositories.DepartamentoRepository;
 import gestorDeVehiculosEmpresariales.repositories.EmpleadoRepository;
+import gestorDeVehiculosEmpresariales.repositories.EmpresaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -9,42 +16,59 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+
 @Service
 public class EmpleadoService {
     private static final Logger logger = LoggerFactory.getLogger(EmpleadoService.class);
     private final EmpleadoRepository empleadoRepository;
+    private final DepartamentoRepository departamentoRepository;
+    private final EmpresaRepository empresaRepository;
 
-    public EmpleadoService(EmpleadoRepository empleadoRepository) {
+
+    public EmpleadoService(EmpleadoRepository empleadoRepository, DepartamentoRepository departamentoRepository, EmpresaRepository empresaRepository) {
         this.empleadoRepository = empleadoRepository;
+        this.departamentoRepository = departamentoRepository;
+        this.empresaRepository = empresaRepository;
     }
 
     @Transactional
-    public Empleado saveEmpleado(Empleado unEmpleado) {
-        logger.info("Guardando nuevo empleado: " + unEmpleado.getNombre() + " " + unEmpleado.getApellido());
-        if (empleadoRepository.existsByCorreoElectronico(unEmpleado.getCorreoElectronico())) {
-            logger.warn("El correo electrónico " + unEmpleado.getCorreoElectronico() + " ya está registrado.");
-            throw new IllegalArgumentException("El correo electrónico " + unEmpleado.getCorreoElectronico() + " ya está registrado.");
-        }
-        if (unEmpleado.getNumeroTelefono() == null) {
-            logger.warn("El número de teléfono no puede ser nulo.");
-            throw new IllegalArgumentException("El número de teléfono no puede ser nulo.");
-        }
-        if (unEmpleado.getNumeroTelefono().length() > 10) {
-            logger.warn("El número de teléfono " + unEmpleado.getNumeroTelefono() + " no puede tener más de 10 dígitos.");
-            throw new IllegalArgumentException("El número de teléfono no puede tener más de 10 dígitos.");
+    public EmpleadoResponseDTO saveEmpleado(EmpleadoCreateDTO unEmpleado) {
+        logger.info("Guardando nuevo empleado: " + unEmpleado.nombre() + " " + unEmpleado.apellido());
+        if (empleadoRepository.existsByCorreoElectronico(unEmpleado.correoElectronico())) {
+            logger.warn("El correo electrónico " + unEmpleado.correoElectronico() + " ya está registrado.");
+            throw new IllegalArgumentException("El correo electrónico " + unEmpleado.correoElectronico() + " ya está registrado.");
         }
 
-        if ((unEmpleado.getPinCarga().length() != 4)) {
-            logger.warn("El pin de carga " + unEmpleado.getPinCarga() + " debe tener exactamente 4 dígitos.");
-            throw new IllegalArgumentException("El pin de carga debe tener exactamente 4 dígitos.");
+        Empleado empleado = new Empleado();
+        empleado.setNombre(unEmpleado.nombre());
+        empleado.setApellido(unEmpleado.apellido());
+        empleado.setNumeroTelefono(unEmpleado.numeroTelefono());
+        empleado.setDepartamento(departamentoRepository.findById(unEmpleado.departamentoId()).orElseThrow(() -> {
+            logger.warn("El departamento con id " + unEmpleado.departamentoId() + " no existe. No se puede asignar al empleado " + unEmpleado.nombre() + " " + unEmpleado.apellido());
+            return new IllegalArgumentException("El departamento con id " + unEmpleado.departamentoId() + " no existe. No se puede asignar al empleado.");
+        }));
+        empleado.setCorreoElectronico(unEmpleado.correoElectronico());
+        empleado.setPuesto(unEmpleado.puesto());
+        empleado.setTieneRegistroConducir(unEmpleado.tieneRegistroConducir());
+        if (unEmpleado.tieneRegistroConducir()) {
+            empleado.setVencimientoLicencia(unEmpleado.vencimientoLicencia());
+        } else {
+            empleado.setVencimientoLicencia(null);
         }
+        empleado.setPinCarga(unEmpleado.pinCarga());
+        empleado.setEmpresa(empresaRepository.findById(unEmpleado.empresaId()).orElseThrow(() -> {
+            logger.warn("La empresa con id " + unEmpleado.empresaId() + " no existe. No se puede asignar al empleado " + unEmpleado.nombre() + " " + unEmpleado.apellido());
+            return new IllegalArgumentException("La empresa con id " + unEmpleado.empresaId() + " no existe. No se puede asignar al empleado.");
+        }));
 
-        logger.info("Empleado " + unEmpleado.getNombre() + " " + unEmpleado.getApellido() + " guardado exitosamente.");
-        return empleadoRepository.save(unEmpleado);
+        Empleado saved = empleadoRepository.save(empleado);
+
+        logger.info("Empleado " + unEmpleado.nombre() + " " + unEmpleado.apellido() + " guardado exitosamente.");
+        return EmpleadoMapper.toResponseDTO(saved);
     }
 
     @Transactional
-    public Empleado updateEmpleado(Long idEmpleado, Empleado unEmpleado) {
+    public EmpleadoResponseDTO updateEmpleado(Long idEmpleado, EmpleadoUpdateDTO unEmpleado) {
         logger.info("Actualizando empleado con id: " + idEmpleado);
         Empleado empleadoExistente = empleadoRepository.findById(idEmpleado).orElseThrow(() -> {
             logger.warn("No se encontró el empleado con id: " + idEmpleado);
@@ -52,72 +76,83 @@ public class EmpleadoService {
                     new IllegalArgumentException("El empleado con id " + idEmpleado + " no existe.");
         });
 
-        if (!empleadoExistente.getNombre().equals(unEmpleado.getNombre())) {
-            logger.warn("No se puede modificar el nombre del empleado con id: " + idEmpleado);
-            throw new IllegalArgumentException("El Nombre del empleado no puede ser modificado.");
-        }
-
-        if (!empleadoExistente.getApellido().equals(unEmpleado.getApellido())) {
-            logger.warn("No se puede modificar el apellido del empleado con id: " + idEmpleado);
-            throw new IllegalArgumentException("Apellido del empleado no puede ser modificado.");
-        }
-
-        if (!(empleadoExistente.getCorreoElectronico().equals(unEmpleado.getCorreoElectronico()))) {
-            if (empleadoRepository.existsByCorreoElectronico(unEmpleado.getCorreoElectronico())) {
-                logger.warn("El correo electrónico " + unEmpleado.getCorreoElectronico() + " ya está registrado por otro empleado.");
+        if (!(empleadoExistente.getCorreoElectronico().equals(unEmpleado.correoElectronico()))) {
+            if (empleadoRepository.existsByCorreoElectronico(unEmpleado.correoElectronico())) {
+                logger.warn("El correo electrónico " + unEmpleado.correoElectronico() + " ya está registrado por otro empleado.");
                 throw new IllegalArgumentException("El correo electrónico esta siendo utilizado por otro empleado.");
             }
         }
-        if (unEmpleado.getNumeroTelefono() == null) {
-            logger.warn("El número de teléfono no puede ser nulo.");
-            throw new IllegalArgumentException("El número de teléfono no puede ser nulo.");
-        }
-        if (!(empleadoExistente.getNumeroTelefono().equals(unEmpleado.getNumeroTelefono()))) {
-            if (empleadoRepository.existsByNumeroTelefono(unEmpleado.getNumeroTelefono())) {
-                logger.warn("El número de teléfono " + unEmpleado.getNumeroTelefono() + " ya está registrado por otro empleado.");
+
+        if (!(empleadoExistente.getNumeroTelefono().equals(unEmpleado.numeroTelefono()))) {
+            if (empleadoRepository.existsByNumeroTelefono(unEmpleado.numeroTelefono())) {
+                logger.warn("El número de teléfono " + unEmpleado.numeroTelefono() + " ya está registrado por otro empleado.");
                 throw new IllegalArgumentException("El numero de telefono esta siendo utilizado por otro empleado.");
             }
         }
 
-        empleadoExistente.setDepartamento(unEmpleado.getDepartamento());
-        empleadoExistente.setPuesto(unEmpleado.getPuesto());
-        empleadoExistente.setTieneRegistroConducir(unEmpleado.getTieneRegistroConducir());
-        if (unEmpleado.getTieneRegistroConducir()) {
-            empleadoExistente.setVencimientoLicencia(unEmpleado.getVencimientoLicencia());
+        empleadoExistente.setDepartamento(departamentoRepository.findById(unEmpleado.departamentoId()).orElseThrow(() -> new IllegalArgumentException("El departamento con id " + unEmpleado.departamentoId() + " no existe.")));
+        empleadoExistente.setPuesto(unEmpleado.puesto());
+        empleadoExistente.setTieneRegistroConducir(unEmpleado.tieneRegistroConducir());
+        if (unEmpleado.tieneRegistroConducir()) {
+            empleadoExistente.setVencimientoLicencia(unEmpleado.vencimientoLicencia());
         } else {
             empleadoExistente.setVencimientoLicencia(null);
         }
-        empleadoExistente.setPinCarga(unEmpleado.getPinCarga());
-        empleadoExistente.setCorreoElectronico(unEmpleado.getCorreoElectronico());
-        empleadoExistente.setNumeroTelefono(unEmpleado.getNumeroTelefono());
+        empleadoExistente.setPinCarga(unEmpleado.pinCarga());
+        
+        empleadoExistente.setCorreoElectronico(unEmpleado.correoElectronico());
+        empleadoExistente.setNumeroTelefono(unEmpleado.numeroTelefono());
         Empleado saved = empleadoRepository.save(empleadoExistente);
         logger.info("Empleado con id: " + idEmpleado + " actualizado exitosamente.");
-        return (saved);
+        return EmpleadoMapper.toResponseDTO(saved);
     }
 
-    @Transactional
-    public Empleado findEmpleadoById(Long idEmpleado) {
+    @Transactional(readOnly = true)
+    public EmpleadoResponseDTO findEmpleadoById(Long idEmpleado) {
         logger.info("Buscando empleado con id: " + idEmpleado);
-
-        return empleadoRepository.findById(idEmpleado).orElseThrow(() -> new IllegalArgumentException("El empleado con id " + idEmpleado + " no existe."));
+        Empleado empleadoExistente = empleadoRepository.findById(idEmpleado).orElseThrow(() -> {
+            logger.warn("No se encontró el empleado con id: " + idEmpleado);
+            return new IllegalArgumentException("El empleado con id " + idEmpleado + " no existe.");
+        });
+        logger.info("Empleado con id: " + idEmpleado + " encontrado exitosamente.");
+        return EmpleadoMapper.toResponseDTO(empleadoExistente);
     }
 
-    @Transactional
-    public List<Empleado> findAllEmpleado() {
+
+    @Transactional(readOnly = true)
+    public List<EmpleadoSimpleDTO> findAllEmpleado() {
         logger.info("Obteniendo lista de todos los empleados");
-        return empleadoRepository.findAll();
+        List<Empleado> empleados = empleadoRepository.findAll();
+
+        List<EmpleadoSimpleDTO> empleadosDto = empleados.stream()
+                .map(EmpleadoMapper::toSimpleDTO)
+                .toList();
+        logger.info("Se encontraron " + empleadosDto.size() + " empleados en total.");
+        return empleadosDto;
     }
 
-    @Transactional
-    public List<Empleado> findEmpleadosByIdEmpresa(Long idEmpresa) {
+    @Transactional(readOnly = true)
+    public List<EmpleadoSimpleDTO> findEmpleadosByIdEmpresa(Long idEmpresa) {
         logger.info("Obteniendo lista de empleados para la empresa con id: " + idEmpresa);
-        return empleadoRepository.findByEmpresaId(idEmpresa);
+        List<Empleado> empleados = empleadoRepository.findByEmpresaId(idEmpresa);
+
+        List<EmpleadoSimpleDTO> empleadosDto = empleados.stream()
+                .map(EmpleadoMapper::toSimpleDTO)
+                .toList();
+        logger.info("Se encontraron " + empleadosDto.size() + " empleados en total.");
+        return empleadosDto;
     }
 
-    @Transactional
-    public List<Empleado> findEmpleadosByIdDepartamento(Long idDepartamento) {
+    @Transactional(readOnly = true)
+    public List<EmpleadoSimpleDTO> findEmpleadosByIdDepartamento(Long idDepartamento) {
         logger.info("Obteniendo lista de empleados para el departamento con id: " + idDepartamento);
-        return empleadoRepository.findByDepartamentoId(idDepartamento);
+        List<Empleado> empleados = empleadoRepository.findByDepartamentoId(idDepartamento);
+
+        List<EmpleadoSimpleDTO> empleadosDto = empleados.stream()
+                .map(EmpleadoMapper::toSimpleDTO)
+                .toList();
+        logger.info("Se encontraron " + empleadosDto.size() + " empleados en total.");
+        return empleadosDto;
     }
 
     @Transactional
