@@ -74,7 +74,7 @@ public class VehiculoService {
 
         Vehiculo vehiculoExistente = vehiculoRepository.findById(idVehiculo).orElseThrow(() -> {
             logger.warn("El vehículo con id " + idVehiculo + " no existe.");
-            throw new RecursoNoEncontradoException("El vehículo con id " + idVehiculo + " no existe.");
+            return new RecursoNoEncontradoException("El vehículo con id " + idVehiculo + " no existe.");
         });
 
 
@@ -91,10 +91,8 @@ public class VehiculoService {
         vehiculoExistente.setNivelCombustible(unVehiculoDTO.nivelCombustible());
 
 
-        Vehiculo saved = vehiculoRepository.save(vehiculoExistente);
-
         logger.info("Vehículo con id " + idVehiculo + " actualizado exitosamente.");
-        return VehiculoMapper.toResponseDTO(saved);
+        return VehiculoMapper.toResponseDTO(vehiculoExistente);
 
     }
 
@@ -114,7 +112,7 @@ public class VehiculoService {
         logger.info("Buscando vehículo con id: " + idVehiculo);
         Vehiculo vehiculoExistente = vehiculoRepository.findById(idVehiculo).orElseThrow(() -> {
             logger.warn("El vehículo con id " + idVehiculo + " no existe.");
-            throw new RecursoNoEncontradoException("El vehículo con id " + idVehiculo + " no existe.");
+            return new RecursoNoEncontradoException("El vehículo con id " + idVehiculo + " no existe.");
         });
         VehiculoResponseDTO dto = VehiculoMapper.toResponseDTO(vehiculoExistente);
         logger.info("Vehículo con id " + idVehiculo + " encontrado exitosamente.");
@@ -147,7 +145,7 @@ public class VehiculoService {
 
         Vehiculo vehiculoAEliminar = vehiculoRepository.findById(idVehiculo).orElseThrow(() -> {
             logger.warn("El vehículo con id " + idVehiculo + " no existe.");
-            throw new RecursoNoEncontradoException("El vehículo con id " + idVehiculo + " no existe.");
+            return new RecursoNoEncontradoException("El vehículo con id " + idVehiculo + " no existe.");
         });
 
         if (!vehiculoAEliminar.getNovedades().isEmpty()) {

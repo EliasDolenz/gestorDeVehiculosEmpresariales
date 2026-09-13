@@ -1,12 +1,18 @@
 package gestorDeVehiculosEmpresariales.services;
 
+import gestorDeVehiculosEmpresariales.dto.departamento.DepartamentoCreateDTO;
+import gestorDeVehiculosEmpresariales.dto.departamento.DepartamentoResponseDTO;
+import gestorDeVehiculosEmpresariales.dto.departamento.DepartamentoSimpleDTO;
+import gestorDeVehiculosEmpresariales.dto.departamento.DepartamentoUpdateDTO;
 import gestorDeVehiculosEmpresariales.entities.Departamento;
 import gestorDeVehiculosEmpresariales.entities.Empresa;
 import gestorDeVehiculosEmpresariales.exceptions.RecursoNoEncontradoException;
 import gestorDeVehiculosEmpresariales.exceptions.ReglaDeNegocioException;
+import gestorDeVehiculosEmpresariales.mappers.DepartamentoMapper;
 import gestorDeVehiculosEmpresariales.repositories.DepartamentoRepository;
 import gestorDeVehiculosEmpresariales.repositories.EmpleadoRepository;
 import gestorDeVehiculosEmpresariales.repositories.EmpresaRepository;
+import gestorDeVehiculosEmpresariales.repositories.VehiculoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,31 +27,38 @@ public class DepartamentoService {
     private final DepartamentoRepository departamentoRepository;
     private final EmpresaRepository empresaRepository;
     private final EmpleadoRepository empleadoRepository;
+    private final VehiculoRepository vehiculoRepository;
 
-    public DepartamentoService(DepartamentoRepository departamentoRepository, EmpresaRepository empresaRepository, EmpleadoRepository empleadoRepository) {
+    public DepartamentoService(DepartamentoRepository departamentoRepository, EmpresaRepository empresaRepository, EmpleadoRepository empleadoRepository, VehiculoRepository vehiculoRepository) {
         this.departamentoRepository = departamentoRepository;
         this.empresaRepository = empresaRepository;
         this.empleadoRepository = empleadoRepository;
+        this.vehiculoRepository = vehiculoRepository;
     }
 
     @Transactional
-    public Departamento saveDepartamento(Departamento unDepartamento) {
-        logger.info("Guardando nuevo departamento con nombre: " + unDepartamento.getNombre());
+    public DepartamentoResponseDTO saveDepartamento(DepartamentoCreateDTO unDepartamento) {
+        logger.info("Guardando nuevo departamento con nombre: " + unDepartamento.nombre());
 
-        Empresa empresa = empresaRepository.findById(unDepartamento.getEmpresa().getId()).orElseThrow(() -> {
-            logger.warn("La empresa con ID " + unDepartamento.getEmpresa().getId() + " no existe");
-            throw new RecursoNoEncontradoException("La empresa con ID " + unDepartamento.getEmpresa().getId() + " no existe");
+        Empresa empresa = empresaRepository.findById(unDepartamento.empresaId()).orElseThrow(() -> {
+            logger.warn("La empresa con ID " + unDepartamento.empresaId() + " no existe");
+            return new RecursoNoEncontradoException("La empresa con ID " + unDepartamento.empresaId() + " no existe");
         });
 
-        unDepartamento.setEmpresa(empresa);
-        Departamento saved = this.departamentoRepository.save(unDepartamento);
+        Departamento departamentoNuevo = new Departamento();
+        departamentoNuevo.setNombre(unDepartamento.nombre());
+        departamentoNuevo.setEmpresa(empresa);
+
+        Departamento saved = this.departamentoRepository.save(departamentoNuevo);
+
+        DepartamentoResponseDTO departamentoDTO = DepartamentoMapper.toResponseDTO(saved);
         logger.info("Departamento guardado con ID: " + saved.getId());
-        return saved;
+        return departamentoDTO;
     }
 
     @Transactional
     public Boolean deleteDepartamento(Long idDepartamento) {
-        logger.info("Eliminanando el departamento con ID: " + idDepartamento);
+        logger.info("Eliminando el departamento con ID: " + idDepartamento);
 
         if (!departamentoRepository.existsById(idDepartamento)) {
             logger.warn("El departamento con ID " + idDepartamento + " no existe");
@@ -57,49 +70,49 @@ public class DepartamentoService {
             throw new ReglaDeNegocioException("No se puede eliminar el Departamento porque hay empleados en el mismo");
         }
 
+        if (vehiculoRepository.countByDepartamentoId(idDepartamento) > 0) {
+            logger.warn("No se puede eliminar el departamento con ID " + idDepartamento + " porque hay vehículos asignados a él");
+            throw new ReglaDeNegocioException("No se puede eliminar el Departamento porque hay vehículos en el mismo");
+        }
+
         departamentoRepository.deleteById(idDepartamento);
         logger.info("Departamento con ID " + idDepartamento + " eliminado exitosamente");
         return Boolean.TRUE;
     }
 
-    @Transactional
-    public Departamento findDepartamentoById(Long idDepartamento) {
-        logger.info("Buscando el departametno con ID: " + idDepartamento);
-        Departamento departamento = this.departamentoRepository.findById(idDepartamento).orElseThrow(() -> {
-            logger.warn("El departamento con ID " + idDepartamento + " no existe");
-            throw new RecursoNoEncontradoException("El departamento con ID " + idDepartamento + " no existe");
-        });
+    @Transactional(readOnly = true)
+    public DepartamentoResponseDTO findDepartamentoById(Long idDepartamento) {
+        logger.info("Buscando el departamento con ID: " + idDepartamento);
+        Departamento departamento = this.obtenerDepartamentoPorId(idDepartamento);
         logger.info("Departamento con ID " + idDepartamento + " encontrado exitosamente");
-        return departamento;
+
+        return DepartamentoMapper.toResponseDTO(departamento);
     }
 
-    @Transactional
-    public List<Departamento> findAllDepartamentos() {
+    @Transactional(readOnly = true)
+    public List<DepartamentoSimpleDTO> findAllDepartamentos() {
         logger.info("Obteniendo todos los departamentos");
         List<Departamento> departamentos = this.departamentoRepository.findAll();
         logger.info("Total de departamentos encontrados: " + departamentos.size());
-        return departamentos;
+        return departamentos.stream().map(DepartamentoMapper::toSimpleDTO).toList();
     }
 
     @Transactional
-    public Departamento updateDepartamento(Long idDepartamento, Departamento unDepartamento) {
+    public DepartamentoResponseDTO updateDepartamento(Long idDepartamento, DepartamentoUpdateDTO unDepartamento) {
         logger.info("Actualizando el departamento con ID: " + idDepartamento);
 
-        Departamento departamentoExistente = this.departamentoRepository.findById(idDepartamento).orElseThrow(() -> {
-            logger.warn("El departamento con ID " + idDepartamento + " no existe");
-            throw new RecursoNoEncontradoException("El departamento con ID " + idDepartamento + " no existe");
-        });
+        Departamento departamentoExistente = this.obtenerDepartamentoPorId(idDepartamento);
+        departamentoExistente.setNombre(unDepartamento.nombre());
 
-        Empresa empresa = empresaRepository.findById(unDepartamento.getEmpresa().getId()).orElseThrow(() -> {
-            logger.warn("La empresa con ID " + unDepartamento.getEmpresa().getId() + " no existe");
-            throw new RecursoNoEncontradoException("La empresa con ID " + unDepartamento.getEmpresa().getId() + " no existe");
-        });
 
-        departamentoExistente.setNombre(unDepartamento.getNombre());
-        departamentoExistente.setEmpresa(empresa);
-
-        Departamento updated = this.departamentoRepository.save(departamentoExistente);
         logger.info("Departamento con ID " + idDepartamento + " actualizado exitosamente");
-        return updated;
+        return DepartamentoMapper.toResponseDTO(departamentoExistente);
+    }
+
+    private Departamento obtenerDepartamentoPorId(Long idDepartamento) {
+        return departamentoRepository.findById(idDepartamento).orElseThrow(() -> {
+            logger.warn("El departamento con ID " + idDepartamento + " no existe");
+            return new RecursoNoEncontradoException("El departamento con ID " + idDepartamento + " no existe");
+        });
     }
 }

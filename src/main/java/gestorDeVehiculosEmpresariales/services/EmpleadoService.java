@@ -101,12 +101,12 @@ public class EmpleadoService {
             empleadoExistente.setVencimientoLicencia(null);
         }
         empleadoExistente.setPinCarga(unEmpleado.pinCarga());
-        
+
         empleadoExistente.setCorreoElectronico(unEmpleado.correoElectronico());
         empleadoExistente.setNumeroTelefono(unEmpleado.numeroTelefono());
-        Empleado saved = empleadoRepository.save(empleadoExistente);
+
         logger.info("Empleado con id: " + idEmpleado + " actualizado exitosamente.");
-        return EmpleadoMapper.toResponseDTO(saved);
+        return EmpleadoMapper.toResponseDTO(empleadoExistente);
     }
 
     @Transactional(readOnly = true)

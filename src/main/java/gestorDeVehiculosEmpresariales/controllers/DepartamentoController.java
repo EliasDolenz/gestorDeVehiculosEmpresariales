@@ -1,6 +1,9 @@
 package gestorDeVehiculosEmpresariales.controllers;
 
-import gestorDeVehiculosEmpresariales.entities.Departamento;
+import gestorDeVehiculosEmpresariales.dto.departamento.DepartamentoCreateDTO;
+import gestorDeVehiculosEmpresariales.dto.departamento.DepartamentoResponseDTO;
+import gestorDeVehiculosEmpresariales.dto.departamento.DepartamentoSimpleDTO;
+import gestorDeVehiculosEmpresariales.dto.departamento.DepartamentoUpdateDTO;
 import gestorDeVehiculosEmpresariales.services.DepartamentoService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -20,28 +23,28 @@ public class DepartamentoController {
     }
 
     @GetMapping("/{idDepartamento}")
-    public ResponseEntity<Departamento> getDepartamentoByID(@PathVariable Long idDepartamento) {
-        Departamento departamento = this.departamentoService.findDepartamentoById(idDepartamento);
+    public ResponseEntity<DepartamentoResponseDTO> getDepartamentoByID(@PathVariable Long idDepartamento) {
+        DepartamentoResponseDTO departamento = this.departamentoService.findDepartamentoById(idDepartamento);
         return ResponseEntity.ok(departamento);
     }
 
     @GetMapping
-    public ResponseEntity<List<Departamento>> getAllDepartamentos() {
-        List<Departamento> departamentos = this.departamentoService.findAllDepartamentos();
+    public ResponseEntity<List<DepartamentoSimpleDTO>> getAllDepartamentos() {
+        List<DepartamentoSimpleDTO> departamentos = this.departamentoService.findAllDepartamentos();
         return ResponseEntity.ok(departamentos);
     }
 
     @PutMapping("/{idDepartamento}")
-    public ResponseEntity<Departamento> updateDepartamento(@PathVariable Long idDepartamento, @Valid @RequestBody Departamento unDepartamento) {
-        Departamento departamentoActualizado = this.departamentoService.updateDepartamento(idDepartamento, unDepartamento);
+    public ResponseEntity<DepartamentoResponseDTO> updateDepartamento(@PathVariable Long idDepartamento, @Valid @RequestBody DepartamentoUpdateDTO unDepartamento) {
+        DepartamentoResponseDTO departamentoActualizado = this.departamentoService.updateDepartamento(idDepartamento, unDepartamento);
         return ResponseEntity.ok(departamentoActualizado);
     }
 
     @PostMapping()
-    public ResponseEntity<Departamento> createDepartamento(@Valid @RequestBody Departamento unDepartamento) {
-        Departamento departamentoNuevo = this.departamentoService.saveDepartamento(unDepartamento);
+    public ResponseEntity<DepartamentoResponseDTO> createDepartamento(@Valid @RequestBody DepartamentoCreateDTO unDepartamento) {
+        DepartamentoResponseDTO departamentoNuevo = this.departamentoService.saveDepartamento(unDepartamento);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(departamentoNuevo.getId()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(departamentoNuevo.id()).toUri();
 
         return ResponseEntity.created(location).body(departamentoNuevo);
     }

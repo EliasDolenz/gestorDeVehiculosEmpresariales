@@ -36,6 +36,7 @@ public class EmpresaService {
         Empresa empresa = new Empresa();
         empresa.setNombre(unaEmpresa.nombre());
         empresa.setDireccion(unaEmpresa.direccion());
+
         Empresa empresaGuardada = empresaRepository.save(empresa);
         EmpresaResponseDTO empresaDTO = EmpresaMapper.toResponseDTO(empresaGuardada);
 
@@ -89,6 +90,9 @@ public class EmpresaService {
     }
 
     private Empresa obtenerEmpresaPorId(Long idEmpresa) {
-        return empresaRepository.findById(idEmpresa).orElseThrow(() -> new RecursoNoEncontradoException("No se encontró la empresa con el ID: " + idEmpresa));
+        return empresaRepository.findById(idEmpresa).orElseThrow(() -> {
+            logger.warn("No se encontró la empresa con el ID: " + idEmpresa);
+            return new RecursoNoEncontradoException("No se encontró la empresa con el ID: " + idEmpresa);
+        });
     }
 }
