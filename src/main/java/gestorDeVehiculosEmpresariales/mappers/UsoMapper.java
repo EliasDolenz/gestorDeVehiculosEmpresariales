@@ -5,7 +5,7 @@ import gestorDeVehiculosEmpresariales.entities.Uso;
 
 public class UsoMapper {
     private UsoMapper() {
-        // Private constructor to prevent instantiation
+        // constructor Private para evitar instanciacion
     }
 
 

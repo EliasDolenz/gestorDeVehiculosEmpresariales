@@ -1,8 +1,13 @@
 package gestorDeVehiculosEmpresariales.services;
 
+import gestorDeVehiculosEmpresariales.dto.empresa.EmpresaCreateDTO;
+import gestorDeVehiculosEmpresariales.dto.empresa.EmpresaResponseDTO;
+import gestorDeVehiculosEmpresariales.dto.empresa.EmpresaSimpleDTO;
+import gestorDeVehiculosEmpresariales.dto.empresa.EmpresaUpdateDTO;
 import gestorDeVehiculosEmpresariales.entities.Empresa;
 import gestorDeVehiculosEmpresariales.exceptions.RecursoNoEncontradoException;
 import gestorDeVehiculosEmpresariales.exceptions.ReglaDeNegocioException;
+import gestorDeVehiculosEmpresariales.mappers.EmpresaMapper;
 import gestorDeVehiculosEmpresariales.repositories.EmpresaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,45 +26,58 @@ public class EmpresaService {
     }
 
     @Transactional
-    public Empresa saveEmpresa(Empresa unaEmpresa) {
-        logger.info("Guardando nueva empresa con dirección: " + unaEmpresa.getDireccion());
-        if (empresaRepository.existsByDireccion(unaEmpresa.getDireccion())) {
-            logger.warn("Ya existe una empresa con la dirección: " + unaEmpresa.getDireccion());
+    public EmpresaResponseDTO saveEmpresa(EmpresaCreateDTO unaEmpresa) {
+        logger.info("Guardando nueva empresa con dirección: " + unaEmpresa.direccion());
+        if (empresaRepository.existsByDireccion(unaEmpresa.direccion())) {
+            logger.warn("Ya existe una empresa con la dirección: " + unaEmpresa.direccion());
             throw new ReglaDeNegocioException("Ya existe una empresa con esa dirección.");
         }
-        logger.info("Empresa guardada exitosamente con dirección: " + unaEmpresa.getDireccion());
-        return empresaRepository.save(unaEmpresa);
+
+        Empresa empresa = new Empresa();
+        empresa.setNombre(unaEmpresa.nombre());
+        empresa.setDireccion(unaEmpresa.direccion());
+        Empresa empresaGuardada = empresaRepository.save(empresa);
+        EmpresaResponseDTO empresaDTO = EmpresaMapper.toResponseDTO(empresaGuardada);
+
+        logger.info("Empresa guardada exitosamente con dirección: " + unaEmpresa.direccion());
+        return empresaDTO;
     }
 
-    @Transactional
-    public Empresa findEmpresaById(Long idEmpresa) {
+    @Transactional(readOnly = true)
+    public EmpresaResponseDTO findEmpresaById(Long idEmpresa) {
         logger.info("Buscando empresa con ID: " + idEmpresa);
-        return empresaRepository.findById(idEmpresa).orElseThrow(() -> new RecursoNoEncontradoException("No se encontró la empresa con el ID: " + idEmpresa));
+        Empresa empresa = this.obtenerEmpresaPorId(idEmpresa);
+
+        return EmpresaMapper.toResponseDTO(empresa);
     }
 
-    @Transactional
-    public List<Empresa> findAllEmpresa() {
+    @Transactional(readOnly = true)
+    public List<EmpresaSimpleDTO> findAllEmpresa() {
         logger.info("Buscando todas las empresas");
-        return empresaRepository.findAll();
+
+        List<Empresa> empresas = empresaRepository.findAll();
+
+        List<EmpresaSimpleDTO> empresasDTOs = empresas.stream().map(EmpresaMapper::toSimpleDTO).toList();
+
+        logger.info("Se encontraron " + empresasDTOs.size() + " empresas");
+
+        return empresasDTOs;
     }
 
     @Transactional
-    public Empresa updateEmpresa(Long idEmpresa, Empresa unaEmpresa) {
+    public EmpresaResponseDTO updateEmpresa(Long idEmpresa, EmpresaUpdateDTO unaEmpresaDTO) {
         logger.info("Actualizando empresa con ID: " + idEmpresa);
-        Empresa empresaExistente = this.findEmpresaById(idEmpresa);
-        if (!empresaExistente.getDireccion().equals(unaEmpresa.getDireccion())) {
-            logger.info("La empresa no puede modificar su dirección. Dirección actual: " + empresaExistente.getDireccion() + ", Dirección solicitada: " + unaEmpresa.getDireccion());
-            throw new ReglaDeNegocioException("la empresa no puede modificar su dirección");
-        }
-        empresaExistente.setNombre(unaEmpresa.getNombre());
-        logger.info("Empresa con ID: " + idEmpresa + " actualizada exitosamente. Nuevo nombre: " + unaEmpresa.getNombre());
-        return empresaRepository.save(empresaExistente);
+        Empresa empresaExistente = this.obtenerEmpresaPorId(idEmpresa);
+
+        empresaExistente.setNombre(unaEmpresaDTO.nombre());
+        logger.info("Empresa con ID: " + idEmpresa + " actualizada exitosamente. Nuevo nombre: " + unaEmpresaDTO.nombre());
+        return EmpresaMapper.toResponseDTO(empresaExistente);
     }
 
     @Transactional
     public Boolean deleteEmpresa(Long idEmpresa) {
         logger.info("Eliminando empresa con ID: " + idEmpresa);
-        Empresa empresaExistente = this.findEmpresaById(idEmpresa);
+        Empresa empresaExistente = this.obtenerEmpresaPorId(idEmpresa);
         if (empresaExistente.getDepartamentos().isEmpty()) {
             empresaRepository.delete(empresaExistente);
             logger.info("Empresa con ID: " + idEmpresa + " eliminada exitosamente.");
@@ -68,5 +86,9 @@ public class EmpresaService {
             logger.warn("No se puede eliminar la empresa con ID: " + idEmpresa + " porque tiene departamentos asociados.");
             throw new ReglaDeNegocioException("No se puede eliminar la empresa porque tiene departamentos asociados.");
         }
+    }
+
+    private Empresa obtenerEmpresaPorId(Long idEmpresa) {
+        return empresaRepository.findById(idEmpresa).orElseThrow(() -> new RecursoNoEncontradoException("No se encontró la empresa con el ID: " + idEmpresa));
     }
 }

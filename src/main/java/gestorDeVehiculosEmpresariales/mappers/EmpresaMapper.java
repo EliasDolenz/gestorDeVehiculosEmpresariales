@@ -6,7 +6,7 @@ import gestorDeVehiculosEmpresariales.entities.Empresa;
 import java.util.stream.Collectors;
 public class EmpresaMapper {
     private EmpresaMapper() {
-        // constructor Private para evitar instanciación.
+        // constructor Private para evitar instanciacion.
     }
 
     public static EmpresaSimpleDTO toSimpleDTO(Empresa empresa) {

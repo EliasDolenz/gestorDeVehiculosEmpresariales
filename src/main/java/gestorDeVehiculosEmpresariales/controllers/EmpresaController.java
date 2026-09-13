@@ -1,6 +1,9 @@
 package gestorDeVehiculosEmpresariales.controllers;
 
-import gestorDeVehiculosEmpresariales.entities.Empresa;
+import gestorDeVehiculosEmpresariales.dto.empresa.EmpresaCreateDTO;
+import gestorDeVehiculosEmpresariales.dto.empresa.EmpresaResponseDTO;
+import gestorDeVehiculosEmpresariales.dto.empresa.EmpresaSimpleDTO;
+import gestorDeVehiculosEmpresariales.dto.empresa.EmpresaUpdateDTO;
 import gestorDeVehiculosEmpresariales.services.EmpresaService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -20,29 +23,29 @@ public class EmpresaController {
     }
 
     @GetMapping("/{idEmpresa}")
-    public ResponseEntity<Empresa> getEmpresaByID(@PathVariable Long idEmpresa) {
-        Empresa empresa = this.empresaService.findEmpresaById(idEmpresa);
+    public ResponseEntity<EmpresaResponseDTO> getEmpresaByID(@PathVariable Long idEmpresa) {
+        EmpresaResponseDTO empresa = this.empresaService.findEmpresaById(idEmpresa);
         return ResponseEntity.ok(empresa);
     }
 
     @GetMapping
-    public ResponseEntity<List<Empresa>> getAllEmpresas() {
-        List<Empresa> empresas = this.empresaService.findAllEmpresa();
+    public ResponseEntity<List<EmpresaSimpleDTO>> getAllEmpresas() {
+        List<EmpresaSimpleDTO> empresas = this.empresaService.findAllEmpresa();
         return ResponseEntity.ok(empresas);
     }
 
     @PostMapping
-    public ResponseEntity<Empresa> createEmpresa(@Valid @RequestBody Empresa unaEmpresa) {
-        Empresa empresaNueva = this.empresaService.saveEmpresa(unaEmpresa);
+    public ResponseEntity<EmpresaResponseDTO> createEmpresa(@Valid @RequestBody EmpresaCreateDTO unaEmpresa) {
+        EmpresaResponseDTO empresaNueva = this.empresaService.saveEmpresa(unaEmpresa);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(empresaNueva.getId()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(empresaNueva.id()).toUri();
 
         return ResponseEntity.created(location).body(empresaNueva);
     }
 
     @PutMapping("/{idEmpresa}")
-    public ResponseEntity<Empresa> updateEmpresa(@PathVariable Long idEmpresa, @Valid @RequestBody Empresa unaEmpresa) {
-        Empresa empresaActualizada = this.empresaService.updateEmpresa(idEmpresa, unaEmpresa);
+    public ResponseEntity<EmpresaResponseDTO> updateEmpresa(@PathVariable Long idEmpresa, @Valid @RequestBody EmpresaUpdateDTO unaEmpresa) {
+        EmpresaResponseDTO empresaActualizada = this.empresaService.updateEmpresa(idEmpresa, unaEmpresa);
         return ResponseEntity.ok(empresaActualizada);
     }
 
