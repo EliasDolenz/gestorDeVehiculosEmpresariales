@@ -1,6 +1,8 @@
 package gestorDeVehiculosEmpresariales.services;
 
 import gestorDeVehiculosEmpresariales.entities.*;
+import gestorDeVehiculosEmpresariales.exceptions.RecursoNoEncontradoException;
+import gestorDeVehiculosEmpresariales.exceptions.ReglaDeNegocioException;
 import gestorDeVehiculosEmpresariales.repositories.CargaDeCombustibleRepository;
 import gestorDeVehiculosEmpresariales.repositories.EmpleadoRepository;
 import gestorDeVehiculosEmpresariales.repositories.VehiculoRepository;
@@ -30,7 +32,7 @@ public class CargaDeCombustibleService {
 
         return cargaDeCombustibleRepository.findById(idCarga).orElseThrow(() -> {
             logger.warn("No se encontró la carga de combustible con id: " + idCarga);
-            return new RuntimeException("No se encontró la carga de combustible con id: " + idCarga);
+            return new RecursoNoEncontradoException("No se encontró la carga de combustible con id: " + idCarga);
         });
     }
 
@@ -46,22 +48,22 @@ public class CargaDeCombustibleService {
 
         Vehiculo vehiculoReal = vehiculoRepository.findById(cargaDeCombustible.getVehiculo().getId()).orElseThrow(() -> {
             logger.warn("No se encontro el vehiculo con el ID: " + cargaDeCombustible.getVehiculo().getId());
-            throw new RuntimeException("No se encontró el vehículo con id: " + cargaDeCombustible.getVehiculo().getId());
+            throw new RecursoNoEncontradoException("No se encontró el vehículo con id: " + cargaDeCombustible.getVehiculo().getId());
         });
 
         Empleado empleadoReal = empleadoRepository.findById(cargaDeCombustible.getEmpleado().getId()).orElseThrow(() -> {
             logger.warn("No se encontro el empleado con el ID: " + cargaDeCombustible.getEmpleado().getId());
-            throw new RuntimeException("No se encontró el empleado con id: " + cargaDeCombustible.getEmpleado().getId());
+            throw new RecursoNoEncontradoException("No se encontró el empleado con id: " + cargaDeCombustible.getEmpleado().getId());
         });
 
         if (vehiculoReal.getEstadoVehiculo() == EstadoVehiculo.EN_REPARACION) {
             logger.warn("No se puede cargar combustible a un vehículo que se encuentra en reparación");
-            throw new RuntimeException("No se puede cargar combustible a un vehículo que se encuentra en reparación");
+            throw new ReglaDeNegocioException("No se puede cargar combustible a un vehículo que se encuentra en reparación");
         }
 
         if (cargaDeCombustible.getKmVehiculo() <= vehiculoReal.getKmActual()) {
             logger.warn("El kilometraje de carga (" + cargaDeCombustible.getKmVehiculo() + ") debe ser mayor al actual (" + vehiculoReal.getKmActual() + ")");
-            throw new RuntimeException("El kilometraje de carga debe ser mayor al actual (" + vehiculoReal.getKmActual() + ")");
+            throw new ReglaDeNegocioException("El kilometraje de carga debe ser mayor al actual (" + vehiculoReal.getKmActual() + ")");
         }
 
 
@@ -83,33 +85,32 @@ public class CargaDeCombustibleService {
         logger.info("Actualizando carga de combustible con id: " + idCarga);
         CargaDeCombustible cargaExistente = cargaDeCombustibleRepository.findById(idCarga).orElseThrow(() -> {
             logger.warn("No se encontró la carga de combustible con id: " + idCarga);
-            return new RuntimeException("No se encontró la carga de combustible con id: " + idCarga);
+            throw new RecursoNoEncontradoException("No se encontró la carga de combustible con id: " + idCarga);
         });
 
         Vehiculo vehiculoReal = vehiculoRepository.findById(carga.getVehiculo().getId()).orElseThrow(() -> {
             logger.warn("No se encontró el vehículo con id: " + carga.getVehiculo().getId());
-
-            return new RuntimeException("No se encontró el vehículo con id: " + carga.getVehiculo().getId());
+            throw new RecursoNoEncontradoException("No se encontró el vehículo con id: " + carga.getVehiculo().getId());
         });
 
         if (vehiculoReal.getEstadoVehiculo() != EstadoVehiculo.EN_USO) {
             logger.warn("No se puede modificar la carga de combustible de un vehículo que no se encuentra en uso");
-            throw new RuntimeException("No se puede modificar la carga de combustible de un vehículo que no se encuentra en uso");
+            throw new ReglaDeNegocioException("No se puede modificar la carga de combustible de un vehículo que no se encuentra en uso");
         }
         Empleado empleadoReal = empleadoRepository.findById(carga.getEmpleado().getId()).orElseThrow(() -> {
             logger.warn("No se encontró el empleado con id: " + carga.getEmpleado().getId());
-            return new RuntimeException("No se encontró el empleado con id: " + carga.getEmpleado().getId());
+            throw new RecursoNoEncontradoException("No se encontró el empleado con id: " + carga.getEmpleado().getId());
         });
 
         if (carga.getVehiculo() == null || carga.getEmpleado() == null) {
             logger.warn("El vehículo y el empleado no pueden ser nulos");
-            throw new RuntimeException("El vehículo y el empleado no pueden ser nulos");
+            throw new ReglaDeNegocioException("El vehículo y el empleado no pueden ser nulos");
         }
 
 
         if (carga.getKmVehiculo() < vehiculoReal.getKmActual()) {
             logger.warn("El kilometraje del vehículo a la hora de cargar (" + carga.getKmVehiculo() + ") no puede ser menor al kilometraje actual del vehículo (" + vehiculoReal.getKmActual() + ")");
-            throw new RuntimeException("El kilometraje del vehículo a la hora  de cargar no puede ser menor al kilometraje actual del vehículo");
+            throw new ReglaDeNegocioException("El kilometraje del vehículo a la hora  de cargar no puede ser menor al kilometraje actual del vehículo");
         }
 
         vehiculoReal.setKmActual(carga.getKmVehiculo());
@@ -128,7 +129,7 @@ public class CargaDeCombustibleService {
         logger.info("Eliminando carga de combustible con id: " + idCarga);
         if (!cargaDeCombustibleRepository.existsById(idCarga)) {
             logger.warn("No se encontró la carga de combustible con id: " + idCarga);
-            throw new RuntimeException("No se encontró la carga de combustible con id: " + idCarga);
+            throw new RecursoNoEncontradoException("No se encontró la carga de combustible con id: " + idCarga);
         }
         cargaDeCombustibleRepository.deleteById(idCarga);
         logger.info("Carga de combustible con id: " + idCarga + " eliminada exitosamente.");

@@ -5,6 +5,8 @@ import gestorDeVehiculosEmpresariales.dto.empleado.EmpleadoResponseDTO;
 import gestorDeVehiculosEmpresariales.dto.empleado.EmpleadoSimpleDTO;
 import gestorDeVehiculosEmpresariales.dto.empleado.EmpleadoUpdateDTO;
 import gestorDeVehiculosEmpresariales.entities.Empleado;
+import gestorDeVehiculosEmpresariales.exceptions.RecursoNoEncontradoException;
+import gestorDeVehiculosEmpresariales.exceptions.ReglaDeNegocioException;
 import gestorDeVehiculosEmpresariales.mappers.EmpleadoMapper;
 import gestorDeVehiculosEmpresariales.repositories.DepartamentoRepository;
 import gestorDeVehiculosEmpresariales.repositories.EmpleadoRepository;
@@ -36,7 +38,7 @@ public class EmpleadoService {
         logger.info("Guardando nuevo empleado: " + unEmpleado.nombre() + " " + unEmpleado.apellido());
         if (empleadoRepository.existsByCorreoElectronico(unEmpleado.correoElectronico())) {
             logger.warn("El correo electrónico " + unEmpleado.correoElectronico() + " ya está registrado.");
-            throw new IllegalArgumentException("El correo electrónico " + unEmpleado.correoElectronico() + " ya está registrado.");
+            throw new ReglaDeNegocioException("El correo electrónico " + unEmpleado.correoElectronico() + " ya está registrado.");
         }
 
         Empleado empleado = new Empleado();
@@ -45,7 +47,7 @@ public class EmpleadoService {
         empleado.setNumeroTelefono(unEmpleado.numeroTelefono());
         empleado.setDepartamento(departamentoRepository.findById(unEmpleado.departamentoId()).orElseThrow(() -> {
             logger.warn("El departamento con id " + unEmpleado.departamentoId() + " no existe. No se puede asignar al empleado " + unEmpleado.nombre() + " " + unEmpleado.apellido());
-            return new IllegalArgumentException("El departamento con id " + unEmpleado.departamentoId() + " no existe. No se puede asignar al empleado.");
+            return new RecursoNoEncontradoException("El departamento con id " + unEmpleado.departamentoId() + " no existe. No se puede asignar al empleado.");
         }));
         empleado.setCorreoElectronico(unEmpleado.correoElectronico());
         empleado.setPuesto(unEmpleado.puesto());
@@ -58,7 +60,7 @@ public class EmpleadoService {
         empleado.setPinCarga(unEmpleado.pinCarga());
         empleado.setEmpresa(empresaRepository.findById(unEmpleado.empresaId()).orElseThrow(() -> {
             logger.warn("La empresa con id " + unEmpleado.empresaId() + " no existe. No se puede asignar al empleado " + unEmpleado.nombre() + " " + unEmpleado.apellido());
-            return new IllegalArgumentException("La empresa con id " + unEmpleado.empresaId() + " no existe. No se puede asignar al empleado.");
+            return new RecursoNoEncontradoException("La empresa con id " + unEmpleado.empresaId() + " no existe. No se puede asignar al empleado.");
         }));
 
         Empleado saved = empleadoRepository.save(empleado);
@@ -73,24 +75,24 @@ public class EmpleadoService {
         Empleado empleadoExistente = empleadoRepository.findById(idEmpleado).orElseThrow(() -> {
             logger.warn("No se encontró el empleado con id: " + idEmpleado);
             return
-                    new IllegalArgumentException("El empleado con id " + idEmpleado + " no existe.");
+                    new RecursoNoEncontradoException("El empleado con id " + idEmpleado + " no existe.");
         });
 
         if (!(empleadoExistente.getCorreoElectronico().equals(unEmpleado.correoElectronico()))) {
             if (empleadoRepository.existsByCorreoElectronico(unEmpleado.correoElectronico())) {
                 logger.warn("El correo electrónico " + unEmpleado.correoElectronico() + " ya está registrado por otro empleado.");
-                throw new IllegalArgumentException("El correo electrónico esta siendo utilizado por otro empleado.");
+                throw new ReglaDeNegocioException("El correo electrónico esta siendo utilizado por otro empleado.");
             }
         }
 
         if (!(empleadoExistente.getNumeroTelefono().equals(unEmpleado.numeroTelefono()))) {
             if (empleadoRepository.existsByNumeroTelefono(unEmpleado.numeroTelefono())) {
                 logger.warn("El número de teléfono " + unEmpleado.numeroTelefono() + " ya está registrado por otro empleado.");
-                throw new IllegalArgumentException("El numero de telefono esta siendo utilizado por otro empleado.");
+                throw new ReglaDeNegocioException("El número de teléfono esta siendo utilizado por otro empleado.");
             }
         }
 
-        empleadoExistente.setDepartamento(departamentoRepository.findById(unEmpleado.departamentoId()).orElseThrow(() -> new IllegalArgumentException("El departamento con id " + unEmpleado.departamentoId() + " no existe.")));
+        empleadoExistente.setDepartamento(departamentoRepository.findById(unEmpleado.departamentoId()).orElseThrow(() -> new RecursoNoEncontradoException("El departamento con id " + unEmpleado.departamentoId() + " no existe.")));
         empleadoExistente.setPuesto(unEmpleado.puesto());
         empleadoExistente.setTieneRegistroConducir(unEmpleado.tieneRegistroConducir());
         if (unEmpleado.tieneRegistroConducir()) {
@@ -112,7 +114,7 @@ public class EmpleadoService {
         logger.info("Buscando empleado con id: " + idEmpleado);
         Empleado empleadoExistente = empleadoRepository.findById(idEmpleado).orElseThrow(() -> {
             logger.warn("No se encontró el empleado con id: " + idEmpleado);
-            return new IllegalArgumentException("El empleado con id " + idEmpleado + " no existe.");
+            return new RecursoNoEncontradoException("El empleado con id " + idEmpleado + " no existe.");
         });
         logger.info("Empleado con id: " + idEmpleado + " encontrado exitosamente.");
         return EmpleadoMapper.toResponseDTO(empleadoExistente);
@@ -164,8 +166,7 @@ public class EmpleadoService {
             return Boolean.TRUE;
         } else {
             logger.warn("No se encontró el empleado con id: " + idEmpleado);
-            throw new IllegalArgumentException("El empleado con id " + idEmpleado + " no existe.");
-
+            throw new RecursoNoEncontradoException("El empleado con id " + idEmpleado + " no existe.");
         }
     }
 }

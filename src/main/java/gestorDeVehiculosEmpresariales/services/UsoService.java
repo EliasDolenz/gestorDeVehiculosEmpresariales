@@ -4,6 +4,8 @@ import gestorDeVehiculosEmpresariales.entities.Empleado;
 import gestorDeVehiculosEmpresariales.entities.EstadoVehiculo;
 import gestorDeVehiculosEmpresariales.entities.Uso;
 import gestorDeVehiculosEmpresariales.entities.Vehiculo;
+import gestorDeVehiculosEmpresariales.exceptions.RecursoNoEncontradoException;
+import gestorDeVehiculosEmpresariales.exceptions.ReglaDeNegocioException;
 import gestorDeVehiculosEmpresariales.repositories.EmpleadoRepository;
 import gestorDeVehiculosEmpresariales.repositories.ReservaRepository;
 import gestorDeVehiculosEmpresariales.repositories.UsoRepository;
@@ -38,47 +40,47 @@ public class UsoService {
 
         Vehiculo vehiculoReal = vehiculoRepository.findById(unUso.getVehiculo().getId()).orElseThrow(() -> {
             logger.warn("Vehículo no encontrado con id: " + unUso.getVehiculo().getId());
-            throw new IllegalStateException("Vehículo no encontrado con id: " + unUso.getVehiculo().getId());
+            throw new RecursoNoEncontradoException("Vehículo no encontrado con id: " + unUso.getVehiculo().getId());
         });
 
         Empleado empleadoReal = empleadoRepository.findById(unUso.getEmpleado().getId()).orElseThrow(() -> {
             logger.warn("Empleado no encontrado con id: " + unUso.getEmpleado().getId());
-            throw new IllegalStateException("Empleado no encontrado con id: " + unUso.getEmpleado().getId());
+            throw new RecursoNoEncontradoException("Empleado no encontrado con id: " + unUso.getEmpleado().getId());
         });
 
         if (reservaRepository.existsOverlapping(vehiculoReal.getId(), unUso.getFechaInicio(), unUso.getFechaFinalizacion().plusHours(1))) {
             logger.warn("El vehículo con id: " + unUso.getVehiculo().getId() + " tiene una reserva que se superpone con el período de uso solicitado.");
-            throw new IllegalStateException("El vehículo tiene una reserva que se superpone con el período de uso solicitado.");
+            throw new ReglaDeNegocioException("El vehículo tiene una reserva que se superpone con el período de uso solicitado.");
         }
 
         if (vehiculoReal.getEstadoVehiculo() != EstadoVehiculo.DISPONIBLE) {
             logger.warn("El vehículo con id: " + unUso.getVehiculo().getId() + " no está disponible para su uso. Estado actual: " + vehiculoReal.getEstadoVehiculo());
-            throw new IllegalStateException("El vehículo no está disponible para su uso.");
+            throw new ReglaDeNegocioException("El vehículo no está disponible para su uso.");
         }
 
         if (!empleadoReal.getTieneRegistroConducir()) {
             logger.warn("El empleado con id: " + empleadoReal.getId() + " no tiene registro de conducir.");
-            throw new IllegalStateException("El empleado no tiene registro de conducir.");
+            throw new ReglaDeNegocioException("El empleado no tiene registro de conducir.");
         }
 
         if (empleadoReal.getVencimientoLicencia() == null) {
             logger.warn("El empleado con id: " + empleadoReal.getId() + " no tiene fecha de vencimiento de licencia registrada.");
-            throw new IllegalStateException("El empleado no tiene fecha de vencimiento de licencia registrada.");
+            throw new ReglaDeNegocioException("El empleado no tiene fecha de vencimiento de licencia registrada.");
         }
 
         if (empleadoReal.getVencimientoLicencia().isBefore(ChronoLocalDate.from(LocalDateTime.now()))) {
             logger.warn("La licencia del empleado con id: " + unUso.getEmpleado().getId() + " ha vencido el: " + empleadoReal.getVencimientoLicencia());
-            throw new IllegalStateException("La licencia del empleado ha vencido.");
+            throw new ReglaDeNegocioException("La licencia del empleado ha vencido.");
         }
 
         if (usoRepository.existsByVehiculoAndFechaFinalizacionIsNull(vehiculoReal)) {
             logger.warn("El vehículo con id: " + vehiculoReal.getId() + " ya está en uso por otro empleado.");
-            throw new IllegalStateException("El vehículo ya está en uso.");
+            throw new ReglaDeNegocioException("El vehículo ya está en uso.");
         }
 
         if (usoRepository.existsByEmpleadoAndFechaFinalizacionIsNull(empleadoReal)) {
             logger.warn("El empleado con id: " + empleadoReal.getId() + " ya tiene un uso activo.");
-            throw new IllegalStateException("El empleado ya tiene un uso activo.");
+            throw new ReglaDeNegocioException("El empleado ya tiene un uso activo.");
         }
         unUso.setEmpleado(empleadoReal);
         unUso.setVehiculo(vehiculoReal);
@@ -94,22 +96,22 @@ public class UsoService {
         logger.info("Intentando terminar el uso con id: " + idUso + " y actualizar los kilómetros a: " + kmActualizados);
         Uso uso = usoRepository.findById(idUso).orElseThrow(() -> {
             logger.warn("Uso no encontrado con id: " + idUso);
-            throw new IllegalStateException("Uso no encontrado con id: " + idUso);
+            throw new RecursoNoEncontradoException("Uso no encontrado con id: " + idUso);
         });
 
         if (uso.getFechaFinalizacion() != null) {
             logger.warn("El uso con id: " + idUso + " ya ha sido finalizado el: " + uso.getFechaFinalizacion());
-            throw new IllegalStateException("El uso ya ha sido finalizado.");
+            throw new ReglaDeNegocioException("El uso ya ha sido finalizado.");
         }
 
         if (uso.getVehiculo().getEstadoVehiculo() != EstadoVehiculo.EN_USO) {
             logger.warn("El vehículo con id: " + uso.getVehiculo().getId() + " no está actualmente en uso. Estado actual: " + uso.getVehiculo().getEstadoVehiculo());
-            throw new IllegalStateException("El vehículo no está actualmente en uso.");
+            throw new ReglaDeNegocioException("El vehículo no está actualmente en uso.");
         }
 
         if (uso.getVehiculo().getKmActual() > kmActualizados) {
             logger.warn("Los kilómetros actualizados (" + kmActualizados + ") no pueden ser menores que los kilómetros actuales del vehículo (" + uso.getVehiculo().getKmActual() + ").");
-            throw new IllegalStateException("Los kilómetros actualizados no pueden ser menores que los kilómetros actuales del vehículo.");
+            throw new ReglaDeNegocioException("Los kilómetros actualizados no pueden ser menores que los kilómetros actuales del vehículo.");
         }
 
         uso.setFechaFinalizacion(LocalDateTime.now());
@@ -125,7 +127,7 @@ public class UsoService {
     @Transactional
     public Uso findUsoById(Long idUso) {
         logger.info("Buscando uso con id: " + idUso);
-        return usoRepository.findById(idUso).orElseThrow(() -> new IllegalStateException("Uso no encontrado con id: " + idUso));
+        return usoRepository.findById(idUso).orElseThrow(() -> new RecursoNoEncontradoException("Uso no encontrado con id: " + idUso));
     }
 
     @Transactional
@@ -139,8 +141,7 @@ public class UsoService {
         logger.info("Intentando eliminar el uso con id: " + idUso);
         Uso uso = usoRepository.findById(idUso).orElseThrow(() -> {
             logger.warn("Uso no encontrado con id: " + idUso);
-            throw new IllegalStateException("Uso no encontrado con id: " + idUso);
-
+            throw new RecursoNoEncontradoException("Uso no encontrado con id: " + idUso);
         });
         this.usoRepository.delete(uso);
         logger.info("Uso con id: " + idUso + " eliminado exitosamente.");

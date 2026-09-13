@@ -4,6 +4,8 @@ import gestorDeVehiculosEmpresariales.entities.Empleado;
 import gestorDeVehiculosEmpresariales.entities.Novedad;
 import gestorDeVehiculosEmpresariales.entities.Urgencia;
 import gestorDeVehiculosEmpresariales.entities.Vehiculo;
+import gestorDeVehiculosEmpresariales.exceptions.RecursoNoEncontradoException;
+import gestorDeVehiculosEmpresariales.exceptions.ReglaDeNegocioException;
 import gestorDeVehiculosEmpresariales.repositories.EmpleadoRepository;
 import gestorDeVehiculosEmpresariales.repositories.NovedadRepository;
 import gestorDeVehiculosEmpresariales.repositories.VehiculoRepository;
@@ -33,13 +35,13 @@ public class NovedadService {
         Vehiculo vehiculo = vehiculoRepository.findById(unaNovedad.getVehiculo().getId()).orElseThrow(() -> {
             logger.warn("No se encontro el vehiculo con el ID: " + unaNovedad.getVehiculo().getId());
             return
-                    new IllegalArgumentException("El vehiculo que indica la novedad no se encuentra en el sistema");
+                    new RecursoNoEncontradoException("El vehiculo que indica la novedad no se encuentra en el sistema");
         });
 
         Empleado empleado = empleadoRepository.findById(unaNovedad.getEmpleado().getId()).orElseThrow(() -> {
             logger.warn("No se encontro el empleado con el ID: " + unaNovedad.getEmpleado().getId());
             return
-                    new IllegalArgumentException("El empleado que indica la novedad no se encuentra en el sistema");
+                    new RecursoNoEncontradoException("El empleado que indica la novedad no se encuentra en el sistema");
         });
 
         if (unaNovedad.getUrgencia() == Urgencia.INMEDIATA) {
@@ -61,7 +63,7 @@ public class NovedadService {
         logger.info("Obteniendo novedad con id: " + idNovedad);
         return this.novedadRepository.findById(idNovedad).orElseThrow(() -> {
             logger.warn("No se encontró la novedad con id: " + idNovedad);
-            throw new IllegalArgumentException("La novedad con id " + idNovedad + " no existe.");
+            throw new RecursoNoEncontradoException("La novedad con id " + idNovedad + " no existe.");
         });
     }
 
@@ -70,17 +72,17 @@ public class NovedadService {
         logger.info("Actualizando novedad con id: " + idNovedad);
         Novedad novedadExistente = novedadRepository.findById(idNovedad).orElseThrow(() -> {
             logger.warn("No se encontró la novedad con id: " + idNovedad);
-            throw new IllegalArgumentException("La novedad con id " + idNovedad + " no existe.");
+            throw new RecursoNoEncontradoException("La novedad con id " + idNovedad + " no existe.");
         });
 
         if (!novedadExistente.getEmpleado().getId().equals(unaNovedad.getEmpleado().getId())) {
             logger.warn("Intento de cambiar el empleado que reportó la novedad. Empleado actual: " + novedadExistente.getEmpleado().getId() + ", Empleado nuevo: " + unaNovedad.getEmpleado().getId());
-            throw new IllegalArgumentException("No se puede cambiar el empleado que reportó la novedad.");
+            throw new ReglaDeNegocioException("No se puede cambiar el empleado que reportó la novedad.");
         }
 
         if (!novedadExistente.getVehiculo().getId().equals(unaNovedad.getVehiculo().getId())) {
             logger.warn("Intento de cambiar el vehículo al que pertenece la novedad. Vehículo actual: " + novedadExistente.getVehiculo().getId() + ", Vehículo nuevo: " + unaNovedad.getVehiculo().getId());
-            throw new IllegalArgumentException("No se puede cambiar el vehiculo al que pertenece la novedad.");
+            throw new ReglaDeNegocioException("No se puede cambiar el vehiculo al que pertenece la novedad.");
         }
 
 
@@ -96,11 +98,11 @@ public class NovedadService {
         logger.info("Eliminando novedad con id: " + idNovedad);
         Novedad novedad = novedadRepository.findById(idNovedad).orElseThrow(() -> {
             logger.warn("No se encontró la novedad con id: " + idNovedad);
-            throw new IllegalArgumentException("La novedad con id " + idNovedad + " no existe.");
+            throw new RecursoNoEncontradoException("La novedad con id " + idNovedad + " no existe.");
         });
         if (!novedadRepository.existsById(idNovedad)) {
             logger.info("No se encontró la novedad con id: " + idNovedad + " para eliminar");
-            throw new IllegalArgumentException("La novedad con id " + idNovedad + " no existe.");
+            throw new RecursoNoEncontradoException("La novedad con id " + idNovedad + " no existe.");
         }
 
         Long cantNovedadesUrgentes = novedadRepository.countByVehiculoAndUrgencia(novedad.getVehiculo(), Urgencia.INMEDIATA);
