@@ -2,6 +2,7 @@ package gestorDeVehiculosEmpresariales.dto.uso;
 
 import gestorDeVehiculosEmpresariales.dto.empleado.EmpleadoSimpleDTO;
 import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoSimpleDTO;
+import gestorDeVehiculosEmpresariales.entities.EstadoUso;
 
 import java.time.LocalDateTime;
 
@@ -11,6 +12,6 @@ public record UsoResponseDTO(
         EmpleadoSimpleDTO empleado,
         LocalDateTime fechaInicio,
         LocalDateTime fechaFinalizacion,
-        String estadoDeUso
+        EstadoUso estadoDeUso
 ) {
 }
