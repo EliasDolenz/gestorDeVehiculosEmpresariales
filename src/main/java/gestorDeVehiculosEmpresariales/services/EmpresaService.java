@@ -49,6 +49,7 @@ public class EmpresaService {
         logger.info("Buscando empresa con ID: " + idEmpresa);
         Empresa empresa = this.obtenerEmpresaPorId(idEmpresa);
 
+        logger.info("Empresa encontrada con ID: " + idEmpresa + ", nombre: " + empresa.getNombre() + ", dirección: " + empresa.getDireccion());
         return EmpresaMapper.toResponseDTO(empresa);
     }
 

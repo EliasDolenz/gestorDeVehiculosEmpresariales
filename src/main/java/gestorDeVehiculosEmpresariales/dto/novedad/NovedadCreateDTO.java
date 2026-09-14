@@ -14,8 +14,6 @@ public record NovedadCreateDTO(
         Long idVehiculo,
         @NotNull(message = "El ID del empleado es obligatorio")
         Long idEmpleado,
-        @FutureOrPresent(message = "La fecha del reporte no puede ser en el pasado")
-        LocalDateTime fechaReporte,
         @NotNull(message = "El estado de la novedad es obligatorio")
         EstadoNovedad estadoNovedad,
         @NotNull(message = "El nivel de urgencia es obligatorio")
