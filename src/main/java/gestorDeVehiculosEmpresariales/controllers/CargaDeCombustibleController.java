@@ -1,6 +1,9 @@
 package gestorDeVehiculosEmpresariales.controllers;
 
-import gestorDeVehiculosEmpresariales.entities.CargaDeCombustible;
+import gestorDeVehiculosEmpresariales.dto.cargaDeCombustible.CargaDeCombustibleCreateDTO;
+import gestorDeVehiculosEmpresariales.dto.cargaDeCombustible.CargaDeCombustibleResponseDTO;
+import gestorDeVehiculosEmpresariales.dto.cargaDeCombustible.CargaDeCombustibleSimpleDTO;
+import gestorDeVehiculosEmpresariales.dto.cargaDeCombustible.CargaDeCombustibleUpdateDTO;
 import gestorDeVehiculosEmpresariales.services.CargaDeCombustibleService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -20,29 +23,29 @@ public class CargaDeCombustibleController {
     }
 
     @GetMapping("/{idCarga}")
-    public ResponseEntity<CargaDeCombustible> getCargaDeCombustibleById(@PathVariable Long idCarga) {
-        CargaDeCombustible cargaDeCombustible = this.cargaDeCombustibleService.findCargaById(idCarga);
+    public ResponseEntity<CargaDeCombustibleResponseDTO> getCargaDeCombustibleById(@PathVariable Long idCarga) {
+        CargaDeCombustibleResponseDTO cargaDeCombustible = this.cargaDeCombustibleService.findCargaById(idCarga);
         return ResponseEntity.ok(cargaDeCombustible);
     }
 
     @GetMapping
-    public ResponseEntity<List<CargaDeCombustible>> getAllCargasDeCombustible() {
-        List<CargaDeCombustible> cargasDeCombustible = this.cargaDeCombustibleService.findAllCargas();
+    public ResponseEntity<List<CargaDeCombustibleSimpleDTO>> getAllCargasDeCombustible() {
+        List<CargaDeCombustibleSimpleDTO> cargasDeCombustible = this.cargaDeCombustibleService.findAllCargas();
         return ResponseEntity.ok(cargasDeCombustible);
     }
 
     @PutMapping("/{idCarga}")
-    public ResponseEntity<CargaDeCombustible> updateCargaDeCombustible(@PathVariable Long idCarga, @Valid @RequestBody CargaDeCombustible unaCargaDeCombustible) {
-        CargaDeCombustible cargaDeCombustibleActualizado = this.cargaDeCombustibleService.updateCarga(idCarga, unaCargaDeCombustible);
+    public ResponseEntity<CargaDeCombustibleResponseDTO> updateCargaDeCombustible(@PathVariable Long idCarga, @Valid @RequestBody CargaDeCombustibleUpdateDTO unaCargaDeCombustible) {
+        CargaDeCombustibleResponseDTO cargaDeCombustibleActualizado = this.cargaDeCombustibleService.updateCarga(idCarga, unaCargaDeCombustible);
 
         return ResponseEntity.ok(cargaDeCombustibleActualizado);
     }
 
     @PostMapping()
-    public ResponseEntity<CargaDeCombustible> createCargaDeCombustible(@Valid @RequestBody CargaDeCombustible unaCargaDeCombustible) {
-        CargaDeCombustible cargaDeCombustibleNuevo = this.cargaDeCombustibleService.saveCarga(unaCargaDeCombustible);
+    public ResponseEntity<CargaDeCombustibleResponseDTO> createCargaDeCombustible(@Valid @RequestBody CargaDeCombustibleCreateDTO unaCargaDeCombustible) {
+        CargaDeCombustibleResponseDTO cargaDeCombustibleNuevo = this.cargaDeCombustibleService.saveCarga(unaCargaDeCombustible);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(cargaDeCombustibleNuevo.getId()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(cargaDeCombustibleNuevo.id()).toUri();
 
         return ResponseEntity.created(location).body(cargaDeCombustibleNuevo);
     }

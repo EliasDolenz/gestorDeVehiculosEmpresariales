@@ -124,9 +124,8 @@ public class ReservaService {
         reservaExistente.setFechaDeInicio(unaReserva.fechaDeInicio());
         reservaExistente.setFechaDeFinalizacion(unaReserva.fechaDeFinalizacion());
 
-        Reserva actualizada = reservaRepository.save(reservaExistente);
         logger.info("Reserva con id " + idReserva + " actualizada exitosamente.");
-        return ReservaMapper.toResponseDTO(actualizada);
+        return ReservaMapper.toResponseDTO(reservaExistente);
     }
 
     private Reserva obtenerReservaPorId(Long idReserva) {
@@ -135,5 +134,4 @@ public class ReservaService {
             return new RecursoNoEncontradoException("La reserva con id " + idReserva + " no existe.");
         });
     }
-
 }
