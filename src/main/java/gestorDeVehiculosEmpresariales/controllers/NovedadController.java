@@ -4,7 +4,6 @@ import gestorDeVehiculosEmpresariales.dto.novedad.NovedadCreateDTO;
 import gestorDeVehiculosEmpresariales.dto.novedad.NovedadResponseDTO;
 import gestorDeVehiculosEmpresariales.dto.novedad.NovedadSimpleDTO;
 import gestorDeVehiculosEmpresariales.dto.novedad.NovedadUpdateDTO;
-import gestorDeVehiculosEmpresariales.entities.Novedad;
 import gestorDeVehiculosEmpresariales.services.NovedadService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

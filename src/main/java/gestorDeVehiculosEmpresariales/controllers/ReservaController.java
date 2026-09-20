@@ -1,6 +1,8 @@
 package gestorDeVehiculosEmpresariales.controllers;
 
-import gestorDeVehiculosEmpresariales.entities.Reserva;
+import gestorDeVehiculosEmpresariales.dto.reserva.ReservaCreateDTO;
+import gestorDeVehiculosEmpresariales.dto.reserva.ReservaResponseDTO;
+import gestorDeVehiculosEmpresariales.dto.reserva.ReservaUpdateDTO;
 import gestorDeVehiculosEmpresariales.services.ReservaService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -20,28 +22,28 @@ public class ReservaController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Reserva>> getAllReservas() {
-        List<Reserva> reservas = this.reservaService.findAllReservas();
+    public ResponseEntity<List<ReservaResponseDTO>> getAllReservas() {
+        List<ReservaResponseDTO> reservas = this.reservaService.findAllReservas();
         return ResponseEntity.ok(reservas);
     }
 
     @GetMapping("/{idReserva}")
-    public ResponseEntity<Reserva> getReservaByID(@PathVariable Long idReserva) {
-        Reserva reserva = this.reservaService.findReservaById(idReserva);
+    public ResponseEntity<ReservaResponseDTO> getReservaByID(@PathVariable Long idReserva) {
+        ReservaResponseDTO reserva = this.reservaService.findReservaById(idReserva);
         return ResponseEntity.ok(reserva);
     }
 
     @PostMapping
-    public ResponseEntity<Reserva> createReserva(@Valid @RequestBody Reserva unaReserva) {
-        Reserva reservaNueva = this.reservaService.saveReserva(unaReserva);
+    public ResponseEntity<ReservaResponseDTO> createReserva(@Valid @RequestBody ReservaCreateDTO unaReserva) {
+        ReservaResponseDTO reservaNueva = this.reservaService.saveReserva(unaReserva);
 
-        URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(reservaNueva.getId()).toUri();
+        URI location = ServletUriComponentsBuilder.fromCurrentRequestUri().path("/{id}").buildAndExpand(reservaNueva.id()).toUri();
         return ResponseEntity.created(location).body(reservaNueva);
     }
 
     @PutMapping("/{idReserva}")
-    public ResponseEntity<Reserva> updateReserva(@PathVariable Long idReserva, @Valid @RequestBody Reserva unaReserva) {
-        Reserva reservaActualizada = this.reservaService.updateReserva(idReserva, unaReserva);
+    public ResponseEntity<ReservaResponseDTO> updateReserva(@PathVariable Long idReserva, @Valid @RequestBody ReservaUpdateDTO unaReserva) {
+        ReservaResponseDTO reservaActualizada = this.reservaService.updateReserva(idReserva, unaReserva);
         return ResponseEntity.ok(reservaActualizada);
     }
 
