@@ -8,7 +8,7 @@
         <version>3.5.16</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.DolenzCorporation</groupId>
+    <groupId>com.gestorDeVehiculosEmpresariales</groupId>
     <artifactId>gestorDeVehiculosEmpresariales</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>gestorDeVehiculosEmpresariales</name>

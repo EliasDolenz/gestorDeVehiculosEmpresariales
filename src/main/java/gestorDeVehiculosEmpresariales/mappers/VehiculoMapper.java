@@ -21,7 +21,7 @@ public class VehiculoMapper {
                 vehiculo.getVencimientoVtv(),
                 vehiculo.getNivelCombustible(),
                 vehiculo.getEstadoVehiculo(),
-                vehiculo.getNumeroTarjetaYPF()
+                vehiculo.getNumeroTarjetaNafta()
         );
     }
 

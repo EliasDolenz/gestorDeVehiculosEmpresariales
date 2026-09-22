@@ -72,8 +72,8 @@ public class Vehiculo {
     private EstadoVehiculo estadoVehiculo;
 
     @NotBlank(message = "El numero de la tarjeta no puede estar vacio")
-    @Column(name = "numero_tarjeta_ypf", nullable = false)
-    private String numeroTarjetaYPF;
+    @Column(name = "numero_tarjeta_nafta", nullable = false)
+    private String numeroTarjetaNafta;
 
     @OneToMany(mappedBy = "vehiculo")
     private Set<Reserva> reservas = new HashSet<>();

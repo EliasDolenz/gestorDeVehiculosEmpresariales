@@ -32,7 +32,7 @@ public record VehiculoCreateDTO(
         Combustible nivelCombustible,
         @NotNull(message = "El estado del vehículo no puede ser nulo")
         EstadoVehiculo estadoVehiculo,
-        @NotBlank(message = "La marca de la tarjeta YPF no puede estar vacía")
-        String numeroTarjetaYPF
+        @NotBlank(message = "El número de la tarjeta de nafta no puede estar vacío")
+        String numeroTarjetaNafta
 ) {
 }

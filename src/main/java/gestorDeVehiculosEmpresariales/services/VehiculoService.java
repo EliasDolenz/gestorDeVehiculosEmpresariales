@@ -54,7 +54,7 @@ public class VehiculoService {
         vehiculo.setVencimientoVtv(vehiculoDTO.vencimientoVtv());
         vehiculo.setNivelCombustible(vehiculoDTO.nivelCombustible());
         vehiculo.setEstadoVehiculo(vehiculoDTO.estadoVehiculo());
-        vehiculo.setNumeroTarjetaYPF(vehiculoDTO.numeroTarjetaYPF());
+        vehiculo.setNumeroTarjetaNafta(vehiculoDTO.numeroTarjetaYPF());
 
         if (vehiculoDTO.departamentoId() != null) {
             Departamento dto = departamentoRepository.findById(vehiculoDTO.departamentoId()).orElseThrow(() -> {

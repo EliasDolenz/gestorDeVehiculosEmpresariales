@@ -17,7 +17,7 @@ public record VehiculoResponseDTO(
         LocalDate vencimientoVtv,
         Combustible nivelCombustible,
         EstadoVehiculo estadoVehiculo,
-        String numeroTarjetaYPF
+        String numeroTarjetaNafta
 
 
 ) {
