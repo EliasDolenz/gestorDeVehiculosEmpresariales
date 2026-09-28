@@ -24,13 +24,11 @@ public class EmpleadoService {
     private static final Logger logger = LoggerFactory.getLogger(EmpleadoService.class);
     private final EmpleadoRepository empleadoRepository;
     private final DepartamentoRepository departamentoRepository;
-    private final EmpresaRepository empresaRepository;
 
 
-    public EmpleadoService(EmpleadoRepository empleadoRepository, DepartamentoRepository departamentoRepository, EmpresaRepository empresaRepository) {
+    public EmpleadoService(EmpleadoRepository empleadoRepository, DepartamentoRepository departamentoRepository) {
         this.empleadoRepository = empleadoRepository;
         this.departamentoRepository = departamentoRepository;
-        this.empresaRepository = empresaRepository;
     }
 
     @Transactional
@@ -58,10 +56,7 @@ public class EmpleadoService {
             empleado.setVencimientoLicencia(null);
         }
         empleado.setPinCarga(unEmpleado.pinCarga());
-        empleado.setEmpresa(empresaRepository.findById(unEmpleado.empresaId()).orElseThrow(() -> {
-            logger.warn("La empresa con id " + unEmpleado.empresaId() + " no existe. No se puede asignar al empleado " + unEmpleado.nombre() + " " + unEmpleado.apellido());
-            return new RecursoNoEncontradoException("La empresa con id " + unEmpleado.empresaId() + " no existe. No se puede asignar al empleado.");
-        }));
+
 
         Empleado saved = empleadoRepository.save(empleado);
 
@@ -136,7 +131,7 @@ public class EmpleadoService {
     @Transactional(readOnly = true)
     public List<EmpleadoSimpleDTO> findEmpleadosByIdEmpresa(Long idEmpresa) {
         logger.info("Obteniendo lista de empleados para la empresa con id: " + idEmpresa);
-        List<Empleado> empleados = empleadoRepository.findByEmpresaId(idEmpresa);
+        List<Empleado> empleados = empleadoRepository.findByDepartamentoEmpresaId(idEmpresa);
 
         List<EmpleadoSimpleDTO> empleadosDto = empleados.stream()
                 .map(EmpleadoMapper::toSimpleDTO)

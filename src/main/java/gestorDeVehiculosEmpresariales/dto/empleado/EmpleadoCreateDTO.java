@@ -24,8 +24,6 @@ public record EmpleadoCreateDTO(
         LocalDate vencimientoLicencia,
         @NotBlank(message = "El pin de carga del empleado no puede estar vacío")
         @Pattern(regexp = "\\d{4}", message = "El pin de carga debe tener exactamente 4 dígitos")
-        String pinCarga,
-        @NotNull(message = "El empresaId del empleado no puede ser nulo")
-        Long empresaId
+        String pinCarga
 ) {
 }

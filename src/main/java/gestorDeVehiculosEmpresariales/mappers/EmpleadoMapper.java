@@ -29,7 +29,7 @@ public class EmpleadoMapper {
                 empleado.getPuesto(),
                 empleado.getTieneRegistroConducir(),
                 empleado.getVencimientoLicencia(),
-                EmpresaMapper.toSimpleDTO(empleado.getEmpresa())
+                EmpresaMapper.toSimpleDTO(empleado.getDepartamento().getEmpresa())
         );
     }
 }
