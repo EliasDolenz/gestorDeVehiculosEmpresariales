@@ -127,8 +127,6 @@ public class NovedadService {
 
     private void actualizarEstadoVehiculoSiEsNecesario(Vehiculo vehiculo) {
 
-        //Este método tengo q verificarlo, porque afecta el estado del vehiculo, y va a tener problemas cuando se reporte una novedad de urgencia inmediata y el vehiculo este En_Uso
-
         Long cantNovedadesUrgentes = novedadRepository.countByVehiculoAndUrgencia(vehiculo, Urgencia.INMEDIATA);
 
         if ((cantNovedadesUrgentes > 0 && !vehiculo.getEstadoVehiculo().equals(EstadoVehiculo.EN_REPARACION))) {
