@@ -116,6 +116,35 @@ class NovedadServiceTest {
     }
 
     @Test
+    @DisplayName("No pisa el estado 'en uso' del vehiculo al reportar una novedad inmediata")
+    void noPisaElEstadoEnUsoDelVehiculoAlReportarUnaNovedadInmediata() {
+        Vehiculo vehiculo = vehiculoDisponible(1L);
+        vehiculo.setEstadoVehiculo(EstadoVehiculo.EN_USO);
+
+        Novedad novedad = new Novedad();
+        novedad.setId(3L);
+        novedad.setVehiculo(vehiculo);
+        novedad.setEmpleado(empleado(2L));
+        novedad.setUrgencia(Urgencia.INMEDIATA);
+        novedad.setEstadoNovedad(EstadoNovedad.EN_PROCESO);
+        novedad.setDescripcion("Test de creación");
+
+        when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
+        when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado(2L)));
+        when(novedadRepository.countByVehiculoAndUrgencia(vehiculo, Urgencia.INMEDIATA)).thenReturn(1L);
+        when(novedadRepository.save(any(Novedad.class))).thenReturn(novedad);
+
+        NovedadCreateDTO dto = new NovedadCreateDTO("Test de creación", 1L, 2L, EstadoNovedad.EN_PROCESO, Urgencia.INMEDIATA);
+
+        NovedadResponseDTO resultado = novedadService.saveNovedad(dto);
+
+        assertEquals(EstadoVehiculo.EN_USO, vehiculo.getEstadoVehiculo());
+        verify(vehiculoRepository, never()).save(any());
+        assertNotNull(resultado);
+        assertEquals(3L,resultado.id());
+    }
+
+    @Test
     @DisplayName("Crea una nueva Novedad cuando los datos son validos y tiene Urgencia Inmediata, poniendo el vehiculo enreparación")
     void poneElVehiculoEnReparacionSiLaNovedadEsInmediata() {
         Vehiculo vehiculo = vehiculoDisponible(1L);
@@ -148,6 +177,5 @@ class NovedadServiceTest {
         assertNotNull(guardada.getFechaReporte());
         assertNotNull(resultado);
         assertEquals(3L,resultado.id());
-
     }
 }

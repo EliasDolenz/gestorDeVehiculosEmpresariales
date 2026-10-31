@@ -129,7 +129,7 @@ public class NovedadService {
 
         Long cantNovedadesUrgentes = novedadRepository.countByVehiculoAndUrgencia(vehiculo, Urgencia.INMEDIATA);
 
-        if ((cantNovedadesUrgentes > 0 && !vehiculo.getEstadoVehiculo().equals(EstadoVehiculo.EN_REPARACION))) {
+        if ((cantNovedadesUrgentes > 0 && vehiculo.getEstadoVehiculo().equals(EstadoVehiculo.DISPONIBLE))) {
             vehiculo.setEstadoVehiculo(EstadoVehiculo.EN_REPARACION);
             logger.info("Actualizando estado del vehículo con id: " + vehiculo.getId() + " a EN_REPARACION ya que tiene novedades urgentes");
             vehiculoRepository.save(vehiculo);
