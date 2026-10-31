@@ -2,6 +2,7 @@ package gestorDeVehiculosEmpresariales.services;
 
 import gestorDeVehiculosEmpresariales.dto.novedad.NovedadCreateDTO;
 import gestorDeVehiculosEmpresariales.dto.novedad.NovedadResponseDTO;
+import gestorDeVehiculosEmpresariales.dto.novedad.NovedadUpdateDTO;
 import gestorDeVehiculosEmpresariales.entities.*;
 import gestorDeVehiculosEmpresariales.exceptions.RecursoNoEncontradoException;
 import gestorDeVehiculosEmpresariales.repositories.EmpleadoRepository;
@@ -93,7 +94,7 @@ class NovedadServiceTest {
 
         when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
         when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado));
-        when(novedadRepository.countByVehiculoAndUrgencia(vehiculo, Urgencia.INMEDIATA)).thenReturn(0L);
+        when(novedadRepository.countByVehiculoAndUrgenciaAndEstadoNovedadNot(vehiculo, Urgencia.INMEDIATA, EstadoNovedad.SOLUCIONADO)).thenReturn(0L);
         when(novedadRepository.save(any(Novedad.class))).thenReturn(novedad);
 
         NovedadCreateDTO dto = new NovedadCreateDTO("Test de creación", 1L, 2L, EstadoNovedad.EN_PROCESO, Urgencia.BAJA);
@@ -110,7 +111,7 @@ class NovedadServiceTest {
         assertEquals(empleado, guardada.getEmpleado());
         assertNotNull(guardada.getFechaReporte());
         assertNotNull(resultado);
-        assertEquals(3L,resultado.id());
+        assertEquals(3L, resultado.id());
         verify(vehiculoRepository, never()).save(any());
 
     }
@@ -131,7 +132,7 @@ class NovedadServiceTest {
 
         when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
         when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado(2L)));
-        when(novedadRepository.countByVehiculoAndUrgencia(vehiculo, Urgencia.INMEDIATA)).thenReturn(1L);
+        when(novedadRepository.countByVehiculoAndUrgenciaAndEstadoNovedadNot(vehiculo, Urgencia.INMEDIATA, EstadoNovedad.SOLUCIONADO)).thenReturn(1L);
         when(novedadRepository.save(any(Novedad.class))).thenReturn(novedad);
 
         NovedadCreateDTO dto = new NovedadCreateDTO("Test de creación", 1L, 2L, EstadoNovedad.EN_PROCESO, Urgencia.INMEDIATA);
@@ -141,7 +142,7 @@ class NovedadServiceTest {
         assertEquals(EstadoVehiculo.EN_USO, vehiculo.getEstadoVehiculo());
         verify(vehiculoRepository, never()).save(any());
         assertNotNull(resultado);
-        assertEquals(3L,resultado.id());
+        assertEquals(3L, resultado.id());
     }
 
     @Test
@@ -159,7 +160,7 @@ class NovedadServiceTest {
 
         when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
         when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado));
-        when(novedadRepository.countByVehiculoAndUrgencia(vehiculo, Urgencia.INMEDIATA)).thenReturn(1L);
+        when(novedadRepository.countByVehiculoAndUrgenciaAndEstadoNovedadNot(vehiculo, Urgencia.INMEDIATA, EstadoNovedad.SOLUCIONADO)).thenReturn(1L);
         when(novedadRepository.save(any(Novedad.class))).thenReturn(novedad);
 
         NovedadCreateDTO dto = new NovedadCreateDTO("Test de creación", 1L, 2L, EstadoNovedad.EN_PROCESO, Urgencia.INMEDIATA);
@@ -176,6 +177,35 @@ class NovedadServiceTest {
         assertEquals(EstadoVehiculo.EN_REPARACION, vehiculo.getEstadoVehiculo());
         assertNotNull(guardada.getFechaReporte());
         assertNotNull(resultado);
-        assertEquals(3L,resultado.id());
+        assertEquals(3L, resultado.id());
+    }
+
+    @Test
+    @DisplayName("Libera el vehículo al solucionar la única novedad de urgencia inmediata")
+    void liberaElVehiculoAlSolucionarLaUnicaNovedadInmediata() {
+
+        Vehiculo vehiculo = vehiculoDisponible(1L);
+        vehiculo.setEstadoVehiculo(EstadoVehiculo.EN_REPARACION);
+
+        Empleado empleado = empleado(2L);
+
+        Novedad novedad = new Novedad();
+        novedad.setId(3L);
+        novedad.setVehiculo(vehiculo);
+        novedad.setUrgencia(Urgencia.INMEDIATA);
+        novedad.setEstadoNovedad(EstadoNovedad.EN_PROCESO);
+        novedad.setDescripcion("Test de solucion");
+        novedad.setEmpleado(empleado);
+
+        when(novedadRepository.findById(3L)).thenReturn(Optional.of(novedad));
+        when(novedadRepository.countByVehiculoAndUrgenciaAndEstadoNovedadNot(vehiculo, Urgencia.INMEDIATA, EstadoNovedad.SOLUCIONADO)).thenReturn(0L);
+
+
+        NovedadResponseDTO resultado = novedadService.updateNovedad(3L, new NovedadUpdateDTO("Test de solucion", EstadoNovedad.SOLUCIONADO, Urgencia.INMEDIATA));
+
+        assertEquals(EstadoVehiculo.DISPONIBLE, vehiculo.getEstadoVehiculo());
+        assertEquals(EstadoNovedad.SOLUCIONADO, novedad.getEstadoNovedad());
+        verify(vehiculoRepository).save(vehiculo);
+        assertNotNull(resultado);
     }
 }

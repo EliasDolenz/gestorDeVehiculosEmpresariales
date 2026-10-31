@@ -127,7 +127,7 @@ public class NovedadService {
 
     private void actualizarEstadoVehiculoSiEsNecesario(Vehiculo vehiculo) {
 
-        Long cantNovedadesUrgentes = novedadRepository.countByVehiculoAndUrgencia(vehiculo, Urgencia.INMEDIATA);
+        Long cantNovedadesUrgentes = novedadRepository.countByVehiculoAndUrgenciaAndEstadoNovedadNot(vehiculo, Urgencia.INMEDIATA, EstadoNovedad.SOLUCIONADO);
 
         if ((cantNovedadesUrgentes > 0 && vehiculo.getEstadoVehiculo().equals(EstadoVehiculo.DISPONIBLE))) {
             vehiculo.setEstadoVehiculo(EstadoVehiculo.EN_REPARACION);
