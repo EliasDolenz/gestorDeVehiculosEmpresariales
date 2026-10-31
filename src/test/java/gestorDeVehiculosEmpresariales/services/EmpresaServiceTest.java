@@ -2,7 +2,6 @@ package gestorDeVehiculosEmpresariales.services;
 
 import gestorDeVehiculosEmpresariales.dto.empresa.EmpresaCreateDTO;
 import gestorDeVehiculosEmpresariales.dto.empresa.EmpresaResponseDTO;
-import gestorDeVehiculosEmpresariales.dto.novedad.NovedadResponseDTO;
 import gestorDeVehiculosEmpresariales.entities.Departamento;
 import gestorDeVehiculosEmpresariales.entities.Empresa;
 import gestorDeVehiculosEmpresariales.exceptions.RecursoNoEncontradoException;

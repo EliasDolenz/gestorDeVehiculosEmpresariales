@@ -24,11 +24,13 @@ public class NovedadService {
     private final NovedadRepository novedadRepository;
     private final VehiculoRepository vehiculoRepository;
     private final EmpleadoRepository empleadoRepository;
+    private final VehiculoService vehiculoService;
 
-    public NovedadService(NovedadRepository novedadRepository, EmpleadoRepository empleadoRepository, VehiculoRepository vehiculoRepository) {
+    public NovedadService(NovedadRepository novedadRepository, EmpleadoRepository empleadoRepository, VehiculoRepository vehiculoRepository, VehiculoService vehiculoService) {
         this.novedadRepository = novedadRepository;
         this.vehiculoRepository = vehiculoRepository;
         this.empleadoRepository = empleadoRepository;
+        this.vehiculoService = vehiculoService;
     }
 
     @Transactional
@@ -56,7 +58,7 @@ public class NovedadService {
 
 
         Novedad novedadGuardada = this.novedadRepository.save(novedad);
-        this.actualizarEstadoVehiculoSiEsNecesario(vehiculo);
+        this.vehiculoService.recalcularEstadoPorNovedades(vehiculo);
         NovedadResponseDTO novedadDTO = NovedadMapper.toResponseDTO(novedadGuardada);
 
         logger.info("Guardando novedad con descripción: " + unaNovedad.descripcion() + " para el vehículo con id: " + unaNovedad.idVehiculo() + " reportada por el empleado con id: " + unaNovedad.idEmpleado());
@@ -97,7 +99,7 @@ public class NovedadService {
         novedadExistente.setDescripcion(unaNovedad.descripcion());
         novedadExistente.setUrgencia(unaNovedad.urgencia());
 
-        this.actualizarEstadoVehiculoSiEsNecesario(novedadExistente.getVehiculo());
+        vehiculoService.recalcularEstadoPorNovedades(novedadExistente.getVehiculo());
 
         logger.info("Novedad con id: " + idNovedad + " actualizada exitosamente. Nueva descripción: " + unaNovedad.descripcion() + ", Nuevo estado: " + unaNovedad.estadoNovedad());
         return NovedadMapper.toResponseDTO(novedadExistente);
@@ -112,7 +114,7 @@ public class NovedadService {
         logger.info("Se eliminó la novedad con id: " + idNovedad + " y descripción: " + novedad.getDescripcion());
 
         novedadRepository.deleteById(idNovedad);
-        this.actualizarEstadoVehiculoSiEsNecesario(novedad.getVehiculo());
+        vehiculoService.recalcularEstadoPorNovedades(novedad.getVehiculo());
 
         return Boolean.TRUE;
     }
@@ -123,22 +125,4 @@ public class NovedadService {
             return new RecursoNoEncontradoException("La novedad con id " + idNovedad + " no existe.");
         });
     }
-
-
-    private void actualizarEstadoVehiculoSiEsNecesario(Vehiculo vehiculo) {
-
-        Long cantNovedadesUrgentes = novedadRepository.countByVehiculoAndUrgenciaAndEstadoNovedadNot(vehiculo, Urgencia.INMEDIATA, EstadoNovedad.SOLUCIONADO);
-
-        if ((cantNovedadesUrgentes > 0 && vehiculo.getEstadoVehiculo().equals(EstadoVehiculo.DISPONIBLE))) {
-            vehiculo.setEstadoVehiculo(EstadoVehiculo.EN_REPARACION);
-            logger.info("Actualizando estado del vehículo con id: " + vehiculo.getId() + " a EN_REPARACION ya que tiene novedades urgentes");
-            vehiculoRepository.save(vehiculo);
-        } else if ((cantNovedadesUrgentes == 0 && vehiculo.getEstadoVehiculo().equals(EstadoVehiculo.EN_REPARACION))) {
-            vehiculo.setEstadoVehiculo(EstadoVehiculo.DISPONIBLE);
-            logger.info("Actualizando estado del vehículo con id: " + vehiculo.getId() + " a DISPONIBLE ya que no tiene más novedades urgentes");
-            vehiculoRepository.save(vehiculo);
-        }
-
-    }
-
 }

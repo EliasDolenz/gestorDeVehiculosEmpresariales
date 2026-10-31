@@ -4,13 +4,12 @@ import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoCreateDTO;
 import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoResponseDTO;
 import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoSimpleDTO;
 import gestorDeVehiculosEmpresariales.dto.vehiculo.VehiculoUpdateDTO;
-import gestorDeVehiculosEmpresariales.entities.Departamento;
-import gestorDeVehiculosEmpresariales.entities.EstadoVehiculo;
-import gestorDeVehiculosEmpresariales.entities.Vehiculo;
+import gestorDeVehiculosEmpresariales.entities.*;
 import gestorDeVehiculosEmpresariales.exceptions.RecursoNoEncontradoException;
 import gestorDeVehiculosEmpresariales.exceptions.ReglaDeNegocioException;
 import gestorDeVehiculosEmpresariales.mappers.VehiculoMapper;
 import gestorDeVehiculosEmpresariales.repositories.DepartamentoRepository;
+import gestorDeVehiculosEmpresariales.repositories.NovedadRepository;
 import gestorDeVehiculosEmpresariales.repositories.VehiculoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,10 +23,12 @@ public class VehiculoService {
     private static final Logger logger = LoggerFactory.getLogger(VehiculoService.class);
     private final VehiculoRepository vehiculoRepository;
     private final DepartamentoRepository departamentoRepository;
+    private final NovedadRepository novedadRepository;
 
-    public VehiculoService(VehiculoRepository vehiculoRepository, DepartamentoRepository departamentoRepository) {
+    public VehiculoService(VehiculoRepository vehiculoRepository, DepartamentoRepository departamentoRepository, NovedadRepository novedadRepository) {
         this.vehiculoRepository = vehiculoRepository;
         this.departamentoRepository = departamentoRepository;
+        this.novedadRepository = novedadRepository;
     }
 
     @Transactional
@@ -156,5 +157,20 @@ public class VehiculoService {
         vehiculoRepository.deleteById(idVehiculo);
         logger.info("Vehículo con id " + idVehiculo + " eliminado exitosamente.");
         return Boolean.TRUE;
+    }
+
+    @Transactional
+    public void recalcularEstadoPorNovedades(Vehiculo vehiculo) {
+        Long cantNovedadesUrgentes = novedadRepository.countByVehiculoAndUrgenciaAndEstadoNovedadNot(vehiculo, Urgencia.INMEDIATA, EstadoNovedad.SOLUCIONADO);
+
+        if ((cantNovedadesUrgentes > 0 && vehiculo.getEstadoVehiculo().equals(EstadoVehiculo.DISPONIBLE))) {
+            vehiculo.setEstadoVehiculo(EstadoVehiculo.EN_REPARACION);
+            logger.info("Actualizando estado del vehículo con id: " + vehiculo.getId() + " a EN_REPARACION ya que tiene novedades urgentes");
+            vehiculoRepository.save(vehiculo);
+        } else if ((cantNovedadesUrgentes == 0 && vehiculo.getEstadoVehiculo().equals(EstadoVehiculo.EN_REPARACION))) {
+            vehiculo.setEstadoVehiculo(EstadoVehiculo.DISPONIBLE);
+            logger.info("Actualizando estado del vehículo con id: " + vehiculo.getId() + " a DISPONIBLE ya que no tiene más novedades urgentes");
+            vehiculoRepository.save(vehiculo);
+        }
     }
 }

@@ -32,6 +32,9 @@ class NovedadServiceTest {
     @Mock
     EmpleadoRepository empleadoRepository;
 
+    @Mock
+    VehiculoService vehiculoService;
+
     @InjectMocks
     NovedadService novedadService;
 
@@ -94,7 +97,6 @@ class NovedadServiceTest {
 
         when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
         when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado));
-        when(novedadRepository.countByVehiculoAndUrgenciaAndEstadoNovedadNot(vehiculo, Urgencia.INMEDIATA, EstadoNovedad.SOLUCIONADO)).thenReturn(0L);
         when(novedadRepository.save(any(Novedad.class))).thenReturn(novedad);
 
         NovedadCreateDTO dto = new NovedadCreateDTO("Test de creación", 1L, 2L, EstadoNovedad.EN_PROCESO, Urgencia.BAJA);
@@ -107,82 +109,16 @@ class NovedadServiceTest {
 
         assertEquals("Test de creación", guardada.getDescripcion());
         assertEquals(vehiculo, guardada.getVehiculo());
-        assertEquals(EstadoVehiculo.DISPONIBLE, vehiculo.getEstadoVehiculo());
         assertEquals(empleado, guardada.getEmpleado());
         assertNotNull(guardada.getFechaReporte());
         assertNotNull(resultado);
         assertEquals(3L, resultado.id());
-        verify(vehiculoRepository, never()).save(any());
-
+        verify(vehiculoService).recalcularEstadoPorNovedades(vehiculo);
     }
 
     @Test
-    @DisplayName("No pisa el estado 'en uso' del vehiculo al reportar una novedad inmediata")
-    void noPisaElEstadoEnUsoDelVehiculoAlReportarUnaNovedadInmediata() {
-        Vehiculo vehiculo = vehiculoDisponible(1L);
-        vehiculo.setEstadoVehiculo(EstadoVehiculo.EN_USO);
-
-        Novedad novedad = new Novedad();
-        novedad.setId(3L);
-        novedad.setVehiculo(vehiculo);
-        novedad.setEmpleado(empleado(2L));
-        novedad.setUrgencia(Urgencia.INMEDIATA);
-        novedad.setEstadoNovedad(EstadoNovedad.EN_PROCESO);
-        novedad.setDescripcion("Test de creación");
-
-        when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
-        when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado(2L)));
-        when(novedadRepository.countByVehiculoAndUrgenciaAndEstadoNovedadNot(vehiculo, Urgencia.INMEDIATA, EstadoNovedad.SOLUCIONADO)).thenReturn(1L);
-        when(novedadRepository.save(any(Novedad.class))).thenReturn(novedad);
-
-        NovedadCreateDTO dto = new NovedadCreateDTO("Test de creación", 1L, 2L, EstadoNovedad.EN_PROCESO, Urgencia.INMEDIATA);
-
-        NovedadResponseDTO resultado = novedadService.saveNovedad(dto);
-
-        assertEquals(EstadoVehiculo.EN_USO, vehiculo.getEstadoVehiculo());
-        verify(vehiculoRepository, never()).save(any());
-        assertNotNull(resultado);
-        assertEquals(3L, resultado.id());
-    }
-
-    @Test
-    @DisplayName("Crea una nueva Novedad cuando los datos son validos y tiene Urgencia Inmediata, poniendo el vehiculo enreparación")
-    void poneElVehiculoEnReparacionSiLaNovedadEsInmediata() {
-        Vehiculo vehiculo = vehiculoDisponible(1L);
-        Empleado empleado = empleado(2L);
-        Novedad novedad = new Novedad();
-        novedad.setId(3L);
-        novedad.setVehiculo(vehiculo);
-        novedad.setEmpleado(empleado);
-        novedad.setUrgencia(Urgencia.INMEDIATA);
-        novedad.setEstadoNovedad(EstadoNovedad.EN_PROCESO);
-        novedad.setDescripcion("Test de creación");
-
-        when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
-        when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado));
-        when(novedadRepository.countByVehiculoAndUrgenciaAndEstadoNovedadNot(vehiculo, Urgencia.INMEDIATA, EstadoNovedad.SOLUCIONADO)).thenReturn(1L);
-        when(novedadRepository.save(any(Novedad.class))).thenReturn(novedad);
-
-        NovedadCreateDTO dto = new NovedadCreateDTO("Test de creación", 1L, 2L, EstadoNovedad.EN_PROCESO, Urgencia.INMEDIATA);
-
-        NovedadResponseDTO resultado = novedadService.saveNovedad(dto);
-
-        ArgumentCaptor<Novedad> captor = ArgumentCaptor.forClass(Novedad.class);
-        verify(novedadRepository).save(captor.capture());
-        Novedad guardada = captor.getValue();
-
-        assertEquals("Test de creación", guardada.getDescripcion());
-        assertEquals(vehiculo, guardada.getVehiculo());
-        assertEquals(empleado, guardada.getEmpleado());
-        assertEquals(EstadoVehiculo.EN_REPARACION, vehiculo.getEstadoVehiculo());
-        assertNotNull(guardada.getFechaReporte());
-        assertNotNull(resultado);
-        assertEquals(3L, resultado.id());
-    }
-
-    @Test
-    @DisplayName("Libera el vehículo al solucionar la única novedad de urgencia inmediata")
-    void liberaElVehiculoAlSolucionarLaUnicaNovedadInmediata() {
+    @DisplayName("Actualiza una Novedad existente y delega el recalculo del estado del vehiculo")
+    void actualizarNovedadDelegaElRecalculoDelVehiculo() {
 
         Vehiculo vehiculo = vehiculoDisponible(1L);
         vehiculo.setEstadoVehiculo(EstadoVehiculo.EN_REPARACION);
@@ -198,14 +134,12 @@ class NovedadServiceTest {
         novedad.setEmpleado(empleado);
 
         when(novedadRepository.findById(3L)).thenReturn(Optional.of(novedad));
-        when(novedadRepository.countByVehiculoAndUrgenciaAndEstadoNovedadNot(vehiculo, Urgencia.INMEDIATA, EstadoNovedad.SOLUCIONADO)).thenReturn(0L);
-
 
         NovedadResponseDTO resultado = novedadService.updateNovedad(3L, new NovedadUpdateDTO("Test de solucion", EstadoNovedad.SOLUCIONADO, Urgencia.INMEDIATA));
 
-        assertEquals(EstadoVehiculo.DISPONIBLE, vehiculo.getEstadoVehiculo());
+
+        verify(vehiculoService).recalcularEstadoPorNovedades(vehiculo);
         assertEquals(EstadoNovedad.SOLUCIONADO, novedad.getEstadoNovedad());
-        verify(vehiculoRepository).save(vehiculo);
         assertNotNull(resultado);
     }
 }
