@@ -37,10 +37,12 @@ class UsoServiceTest {
     private EmpleadoRepository empleadoRepository;
     @Mock
     private UsoRepository usoRepository;
+    @Mock
+    private VehiculoService vehiculoService;
 
     @InjectMocks
     private UsoService usoService;
-
+    
     private Vehiculo vehiculoDisponible(Long id) {
         Vehiculo vehiculo = new Vehiculo();
         vehiculo.setId(id);
@@ -199,6 +201,7 @@ class UsoServiceTest {
 
         assertTrue(ex.getMessage().contains("empleado ya tiene un uso activo"));
         verify(usoRepository, never()).save(any());
+
     }
 
     @Test
@@ -232,6 +235,7 @@ class UsoServiceTest {
         assertEquals(EstadoVehiculo.EN_USO, resultado.vehiculo().estadoVehiculo());
         assertEquals(inicio, resultado.fechaInicio());
         verify(usoRepository).save(any(Uso.class));
+
     }
 
     @Test
@@ -323,7 +327,11 @@ class UsoServiceTest {
         uso.setEmpleado(empleado);
 
         when(usoRepository.findById(1L)).thenReturn(Optional.of(uso));
-
+        doAnswer(invocation -> {
+            Vehiculo v = invocation.getArgument(0);
+            assertEquals(EstadoVehiculo.DISPONIBLE, v.getEstadoVehiculo());
+            return null;
+        }).when(vehiculoService).recalcularEstadoPorNovedades(vehiculo);
         TerminarUsoDTO dto = new TerminarUsoDTO(vehiculo.getKmActual() + 100);
 
 
@@ -334,6 +342,7 @@ class UsoServiceTest {
         assertEquals(3L, resultado.empleado().id());
         assertEquals(EstadoVehiculo.DISPONIBLE, resultado.vehiculo().estadoVehiculo());
         assertEquals(10100, vehiculo.getKmActual());
+        verify(vehiculoService).recalcularEstadoPorNovedades(vehiculo);
     }
 
     @Test

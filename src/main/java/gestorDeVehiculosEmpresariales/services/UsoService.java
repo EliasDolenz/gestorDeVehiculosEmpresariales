@@ -28,12 +28,14 @@ public class UsoService {
     private final VehiculoRepository vehiculoRepository;
     private final UsoRepository usoRepository;
     private final ReservaRepository reservaRepository;
+    private final VehiculoService vehiculoService;
 
-    public UsoService(EmpleadoRepository empleadoRepository, VehiculoRepository vehiculoRepository, UsoRepository usoRepository, ReservaRepository reservaRepository) {
+    public UsoService(EmpleadoRepository empleadoRepository, VehiculoRepository vehiculoRepository, UsoRepository usoRepository, ReservaRepository reservaRepository, VehiculoService vehiculoService) {
         this.empleadoRepository = empleadoRepository;
         this.vehiculoRepository = vehiculoRepository;
         this.usoRepository = usoRepository;
         this.reservaRepository = reservaRepository;
+        this.vehiculoService = vehiculoService;
     }
 
     @Transactional
@@ -121,8 +123,10 @@ public class UsoService {
         uso.setFechaFinalizacion(LocalDateTime.now());
         uso.getVehiculo().setEstadoVehiculo(EstadoVehiculo.DISPONIBLE);
         uso.getVehiculo().setKmActual(kmActualizados);
+        vehiculoService.recalcularEstadoPorNovedades(uso.getVehiculo());
 
-        logger.info("Uso con id: " + idUso + " finalizado exitosamente. Vehículo con id: " + uso.getVehiculo().getId() + " ahora disponible con kilómetros actualizados a: " + kmActualizados);
+
+        logger.info("Uso con id: " + idUso + " finalizado exitosamente. Vehículo con id: " + uso.getVehiculo().getId() + " ahora " + uso.getVehiculo().getEstadoVehiculo() + " con kilómetros actualizados a: " + kmActualizados);
 
         return UsoMapper.toResponseDTO(uso);
     }
