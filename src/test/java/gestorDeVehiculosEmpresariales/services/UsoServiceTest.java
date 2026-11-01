@@ -70,7 +70,7 @@ class UsoServiceTest {
 
         when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado));
         when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
-        when(reservaRepository.existsOverlapping(eq(1L), any(), any())).thenReturn(true);
+        when(reservaRepository.existsOverlappingExcludingSelf(eq(1L), eq(2L),any(), any())).thenReturn(true);
 
         UsoCreateDTO dto = new UsoCreateDTO(1L, 2L);
 
@@ -90,7 +90,7 @@ class UsoServiceTest {
 
         when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado));
         when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
-        when(reservaRepository.existsOverlapping(eq(1L), any(), any())).thenReturn(false);
+        when(reservaRepository.existsOverlappingExcludingSelf(eq(1L), eq(2L),any(), any())).thenReturn(false);
 
         UsoCreateDTO dto = new UsoCreateDTO(1L, 2L);
 
@@ -111,7 +111,7 @@ class UsoServiceTest {
 
         when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado));
         when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
-        when(reservaRepository.existsOverlapping(eq(1L), any(), any())).thenReturn(false);
+        when(reservaRepository.existsOverlappingExcludingSelf(eq(1L), eq(2L),any(), any())).thenReturn(false);
 
         UsoCreateDTO dto = new UsoCreateDTO(1L, 2L);
 
@@ -131,7 +131,7 @@ class UsoServiceTest {
 
         when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado));
         when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
-        when(reservaRepository.existsOverlapping(eq(1L), any(), any())).thenReturn(false);
+        when(reservaRepository.existsOverlappingExcludingSelf(eq(1L), eq(2L),any(), any())).thenReturn(false);
 
         UsoCreateDTO dto = new UsoCreateDTO(1L, 2L);
 
@@ -151,7 +151,7 @@ class UsoServiceTest {
 
         when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado));
         when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
-        when(reservaRepository.existsOverlapping(eq(1L), any(), any())).thenReturn(false);
+        when(reservaRepository.existsOverlappingExcludingSelf(eq(1L), eq(2L),any(), any())).thenReturn(false);
 
         UsoCreateDTO dto = new UsoCreateDTO(1L, 2L);
 
@@ -170,7 +170,7 @@ class UsoServiceTest {
 
         when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado));
         when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
-        when(reservaRepository.existsOverlapping(eq(1L), any(), any())).thenReturn(false);
+        when(reservaRepository.existsOverlappingExcludingSelf(eq(1L), eq(2L),any(), any())).thenReturn(false);
         when(usoRepository.existsByVehiculoAndFechaFinalizacionIsNull(vehiculo)).thenReturn(true);
 
         UsoCreateDTO dto = new UsoCreateDTO(1L, 2L);
@@ -191,7 +191,7 @@ class UsoServiceTest {
 
         when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado));
         when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
-        when(reservaRepository.existsOverlapping(eq(1L), any(), any())).thenReturn(false);
+        when(reservaRepository.existsOverlappingExcludingSelf(eq(1L), eq(2L),any(), any())).thenReturn(false);
         when(usoRepository.existsByVehiculoAndFechaFinalizacionIsNull(vehiculo)).thenReturn(false);
         when(usoRepository.existsByEmpleadoAndFechaFinalizacionIsNull(empleado)).thenReturn(true);
 
@@ -220,7 +220,7 @@ class UsoServiceTest {
         usoGuardado.setFechaInicio(inicio);
         when(empleadoRepository.findById(2L)).thenReturn(Optional.of(empleado));
         when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(vehiculo));
-        when(reservaRepository.existsOverlapping(eq(1L), any(), any())).thenReturn(false);
+        when(reservaRepository.existsOverlappingExcludingSelf(eq(1L), eq(2L),any(), any())).thenReturn(false);
         when(usoRepository.existsByVehiculoAndFechaFinalizacionIsNull(vehiculo)).thenReturn(false);
         when(usoRepository.existsByEmpleadoAndFechaFinalizacionIsNull(empleado)).thenReturn(false);
         when(usoRepository.save(any(Uso.class))).thenReturn(usoGuardado);

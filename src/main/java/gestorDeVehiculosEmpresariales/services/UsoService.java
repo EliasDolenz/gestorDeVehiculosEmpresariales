@@ -52,7 +52,7 @@ public class UsoService {
             return new RecursoNoEncontradoException("Empleado no encontrado con id: " + unUso.idEmpleado());
         });
 
-        if (reservaRepository.existsOverlapping(vehiculoReal.getId(), LocalDateTime.now(), LocalDateTime.now().plusHours(3))) {
+        if (reservaRepository.existsOverlappingExcludingSelf(vehiculoReal.getId(),empleadoReal.getId(), LocalDateTime.now(), LocalDateTime.now().plusHours(3))) {
             logger.warn("El vehículo con id: " + unUso.idVehiculo() + " tiene una reserva que se superpone con el período de uso solicitado.");
             throw new ReglaDeNegocioException("El vehículo tiene una reserva que se superpone con el período de uso solicitado.");
         }

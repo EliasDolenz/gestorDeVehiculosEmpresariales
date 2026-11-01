@@ -18,4 +18,9 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
             "AND r.id <> :idReserva " +
             "AND r.fechaDeFinalizacion > :fechaDeInicio AND r.fechaDeInicio < :fechaDeFinalizacion")
     Boolean existsOverlappingExcludingSelf(Long idVehiculo, Long idReserva, @NotNull(message = "Indicar en que día y horario comienza la reserva") LocalDateTime fechaDeInicio, @NotNull(message = "Indicar en que día y horario termina la reserva") LocalDateTime fechaDeFinalizacion);
+
+    @Query("SELECT COUNT(r) > 0 FROM Reserva r WHERE r.vehiculo.id = :idVehiculo " +
+            "AND r.empleado.id <> :idEmpleado " +
+            "AND r.fechaDeFinalizacion > :fechaDeInicio AND r.fechaDeInicio < :fechaDeFinalizacion")
+    Boolean existsOverlappingDeOtroEmpleado(Long idVehiculo, Long idEmpleado, @NotNull(message = "Indicar en que día y horario comienza la reserva") LocalDateTime fechaDeInicio, @NotNull(message = "Indicar en que día y horario termina la reserva") LocalDateTime fechaDeFinalizacion);
 }
