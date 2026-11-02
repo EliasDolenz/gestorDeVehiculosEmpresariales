@@ -54,7 +54,7 @@ public class VehiculoService {
         vehiculo.setVtvVigente(vehiculoDTO.vtvVigente());
         vehiculo.setVencimientoVtv(vehiculoDTO.vencimientoVtv());
         vehiculo.setNivelCombustible(vehiculoDTO.nivelCombustible());
-        vehiculo.setEstadoVehiculo(vehiculoDTO.estadoVehiculo());
+        vehiculo.setEstadoVehiculo(EstadoVehiculo.DISPONIBLE);
         vehiculo.setNumeroTarjetaNafta(vehiculoDTO.numeroTarjetaNafta());
 
         if (vehiculoDTO.departamentoId() != null) {
@@ -83,7 +83,6 @@ public class VehiculoService {
             logger.warn("Intento de actualizar el vehículo con id " + idVehiculo + " con un kilometraje menor al registrado anteriormente. Kilometraje registrado: " + vehiculoExistente.getKmActual() + ", Kilometraje nuevo: " + unVehiculoDTO.kmActual());
             throw new ReglaDeNegocioException("El kilometraje actual no puede ser menor al kilometraje registrado anteriormente.");
         }
-        vehiculoExistente.setEstadoVehiculo(unVehiculoDTO.estadoVehiculo());
         vehiculoExistente.setKmActual(unVehiculoDTO.kmActual());
         vehiculoExistente.setFechaDeService(unVehiculoDTO.fechaDeService());
         vehiculoExistente.setVencimientoService(unVehiculoDTO.vencimientoService());

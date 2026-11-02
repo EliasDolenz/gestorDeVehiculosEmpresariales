@@ -4,8 +4,10 @@ import gestorDeVehiculosEmpresariales.dto.ErrorResponseDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -73,5 +75,29 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponseDTO> DataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest request) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                409,
+                "Violación de integridad de datos",
+                "Ocurrió un error de integridad de datos. Por favor, revise los datos enviados.",
+                request.getRequestURI()
+        );
+        logger.error("Error de integridad de datos en " + request.getRequestURI(), ex);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDTO> manejarMensajeNoLegible(HttpMessageNotReadableException ex, HttpServletRequest request) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                400,
+                "Mensaje no legible",
+                "\"El cuerpo de la solicitud tiene un formato inválido (revisá el JSON, los valores de los enums y el formato de las fechas)\"",
+                request.getRequestURI()
+        );
+        logger.error("Error de mensaje no legible en " + request.getRequestURI(), ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
 }

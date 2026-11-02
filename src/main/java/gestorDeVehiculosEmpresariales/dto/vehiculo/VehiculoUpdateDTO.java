@@ -1,7 +1,6 @@
 package gestorDeVehiculosEmpresariales.dto.vehiculo;
 
 import gestorDeVehiculosEmpresariales.entities.Combustible;
-import gestorDeVehiculosEmpresariales.entities.EstadoVehiculo;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -20,8 +19,6 @@ public record VehiculoUpdateDTO(
         @NotNull(message = "El vencimiento de la VTV es obligatorio")
         LocalDate vencimientoVtv,
         @NotNull(message = "El tipo de combustible es obligatorio")
-        Combustible nivelCombustible,
-        @NotNull(message = "El estado del vehículo es obligatorio")
-        EstadoVehiculo estadoVehiculo
+        Combustible nivelCombustible
 ) {
 }

@@ -1,7 +1,6 @@
 package gestorDeVehiculosEmpresariales.dto.vehiculo;
 
 import gestorDeVehiculosEmpresariales.entities.Combustible;
-import gestorDeVehiculosEmpresariales.entities.EstadoVehiculo;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -30,8 +29,6 @@ public record VehiculoCreateDTO(
         Long departamentoId,
         @NotNull(message = "El nivel de combustible no puede ser nulo")
         Combustible nivelCombustible,
-        @NotNull(message = "El estado del vehículo no puede ser nulo")
-        EstadoVehiculo estadoVehiculo,
         @NotBlank(message = "El número de la tarjeta de nafta no puede estar vacío")
         String numeroTarjetaNafta
 ) {
