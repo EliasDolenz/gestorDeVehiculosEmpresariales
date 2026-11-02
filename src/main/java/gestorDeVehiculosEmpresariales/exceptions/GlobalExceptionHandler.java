@@ -84,7 +84,7 @@ public class GlobalExceptionHandler {
                 "Ocurrió un error de integridad de datos. Por favor, revise los datos enviados.",
                 request.getRequestURI()
         );
-        logger.error("Error de integridad de datos en " + request.getRequestURI(), ex);
+        logger.warn("Violación de integridad de datos en " + request.getRequestURI(), ex);
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
@@ -97,7 +97,7 @@ public class GlobalExceptionHandler {
                 "\"El cuerpo de la solicitud tiene un formato inválido (revisá el JSON, los valores de los enums y el formato de las fechas)\"",
                 request.getRequestURI()
         );
-        logger.error("Error de mensaje no legible en " + request.getRequestURI(), ex);
+        logger.warn("Mensaje no legible en " + request.getRequestURI(), ex);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 }
