@@ -1,3 +1,5 @@
+![CI](https://github.com/EliasDolenz/gestorDeVehiculosEmpresariales/actions/workflows/ci.yml/badge.svg)
+
 # Gestor de Vehículos Empresariales
 
 API REST para administrar la flota de vehículos de un grupo empresario: quién tiene cada auto,
