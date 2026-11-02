@@ -1,5 +1,5 @@
 package gestorDeVehiculosEmpresariales.entities;
 
 public enum Combustible {
-    RESERVA, UN_CUARTE, MEDIO, TRES_CUARTOS, LLENO
+    RESERVA, UN_CUARTO, MEDIO, TRES_CUARTOS, LLENO
 }
