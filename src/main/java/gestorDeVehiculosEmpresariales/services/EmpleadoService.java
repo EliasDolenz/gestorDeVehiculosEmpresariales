@@ -38,6 +38,10 @@ public class EmpleadoService {
             logger.warn("El correo electrónico " + unEmpleado.correoElectronico() + " ya está registrado.");
             throw new ReglaDeNegocioException("El correo electrónico " + unEmpleado.correoElectronico() + " ya está registrado.");
         }
+        if (empleadoRepository.existsByNumeroTelefono(unEmpleado.numeroTelefono())) {
+            logger.warn("El número de teléfono " + unEmpleado.numeroTelefono() + " ya está registrado.");
+            throw new ReglaDeNegocioException("El número de teléfono " + unEmpleado.numeroTelefono() + " ya está registrado.");
+        }
 
         Empleado empleado = new Empleado();
         empleado.setNombre(unEmpleado.nombre());
