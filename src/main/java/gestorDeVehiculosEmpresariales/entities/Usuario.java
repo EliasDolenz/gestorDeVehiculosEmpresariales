@@ -26,7 +26,7 @@ public class Usuario {
     @Column(name = "contrasena", nullable = false)
     private String contrasena;
 
-    @NotBlank(message = "el rol del usuario no puede ser nulo")
+    @NotNull(message = "el rol del usuario no puede ser nulo")
     @Enumerated(EnumType.STRING)
     @Column(name = "rol", nullable = false)
     private Rol rol;

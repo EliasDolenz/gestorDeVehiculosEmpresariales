@@ -149,6 +149,10 @@ public class UsoService {
     public Boolean deleteUso(Long idUso) {
         logger.info("Intentando eliminar el uso con id: " + idUso);
         Uso uso = this.obtenerUsoById(idUso);
+        if (uso.getFechaFinalizacion() == null) {
+            logger.warn("No se puede eliminar el uso con id: " + idUso + " porque aún no ha sido finalizado.");
+            throw new ReglaDeNegocioException("No se puede eliminar un uso que no ha sido finalizado.");
+        }
         this.usoRepository.delete(uso);
         logger.info("Uso con id: " + idUso + " eliminado exitosamente.");
         return Boolean.TRUE;

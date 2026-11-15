@@ -9,9 +9,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 
 import java.time.LocalDateTime;
@@ -88,6 +91,47 @@ public class GlobalExceptionHandler {
         );
         logger.error("Error no controlado en " + request.getRequestURI(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponseDTO> manejarArgumentoTipoInvalido(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
+        String mensaje = "El parámetro '" + ex.getName() + "' tiene un valor inválido: '" + ex.getValue() + "'.";
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                400,
+                "Argumento de tipo inválido",
+                mensaje,
+                request.getRequestURI()
+        );
+        logger.warn("Argumento de tipo inválido en " + request.getRequestURI(), ex);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> manejarRutaNoEncontrada(NoResourceFoundException ex, HttpServletRequest request) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                404,
+                "Ruta no encontrada",
+                "La ruta solicitada no se encontró en el servidor.",
+                request.getRequestURI()
+        );
+        logger.warn("Ruta no encontrada en " + request.getRequestURI(), ex);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ErrorResponseDTO> manejarMetodoNoSoportado(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+        String mensaje = "El método HTTP '" + ex.getMethod() + "' no está soportado para este endpoint.";
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(
+                LocalDateTime.now(),
+                405,
+                "Método HTTP no soportado",
+                mensaje,
+                request.getRequestURI()
+        );
+        logger.warn("Método HTTP no soportado en " + request.getRequestURI(), ex);
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(errorResponse);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
