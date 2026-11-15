@@ -12,7 +12,8 @@ control se lleva hoy en planillas y grupo de WhatsApp.
 | | |
 |---|---|
 | Lenguaje | Java 17 |
-| Framework | Spring Boot 3.5.16 (Web, Data JPA, Validation) |
+| Framework | Spring Boot 3.5.16 (Web, Data JPA, Validation, Security) |
+| Autenticación | JWT firmado con HS256 (Spring Security OAuth2 Resource Server) |
 | Base de datos | PostgreSQL 16 |
 | ORM | Hibernate |
 | Migraciones | Flyway |
@@ -34,7 +35,7 @@ Ese comando compila la aplicación dentro de un contenedor, levanta PostgreSQL, 
 base acepte conexiones y recién entonces arranca la API. Al iniciar, Flyway crea el esquema
 sobre la base vacía, así que no hace falta correr ningún script SQL.
 
-La app queda en `http://localhost:8080`.
+La app queda en `http://localhost:8080/swagger-ui.html`.
 
 ### Modo desarrollo
 
@@ -49,10 +50,13 @@ docker compose up -d postgres
 En Windows: `.\mvnw.cmd spring-boot:run`. Este modo requiere JDK 17. Si el contenedor `app` está
 corriendo, frenalo antes, porque ocupa el puerto 8080.
 
-> Las credenciales de la base están escritas en `application-dev.properties` y en
-> `docker-compose.yml` a propósito: es un entorno local descartable. El perfil `prod`, que es el
-> que usa el contenedor, toma `DB_URL`, `DB_USERNAME` y `DB_PASSWORD` de variables de entorno,
-> sin valores por defecto, para que la aplicación no arranque si falta alguna.
+> Las credenciales de la base y el secreto con el que se firman los tokens están escritos en
+> `application-dev.properties` y en `docker-compose.yml` a propósito: es un entorno local
+> descartable. El perfil `prod`, que es el que usa el contenedor, toma `DB_URL`, `DB_USERNAME`,
+> `DB_PASSWORD` y `JWT_SECRET` de variables de entorno, sin valores por defecto, para que la
+> aplicación no arranque si falta alguna. `JWT_SECRET` debe tener al menos 32 caracteres, que es
+> lo que exige HS256. La duración del token se ajusta con `JWT_EXPIRATION_MINUTOS` (60 por
+> defecto).
 
 ## Probar la API
 
@@ -60,12 +64,51 @@ Con la aplicación corriendo:
 
 **http://localhost:8080/swagger-ui.html**
 
-Ahí están los 44 endpoints agrupados por dominio, con los campos de cada request, sus
+Ahí están los 45 endpoints agrupados por dominio, con los campos de cada request, sus
 validaciones y los códigos de error que devuelve cada uno. La definición OpenAPI en crudo está
 en `/v3/api-docs`.
 
+### Autenticación
+
+Todos los endpoints piden un token, salvo el login y la documentación. Las migraciones crean
+dos usuarios de demostración:
+
+| Email | Contraseña | Rol |
+|---|---|---|
+| `admin@example.com` | `admin` | `ADMINISTRADOR` |
+| `empleado@example.com` | `empleado` | `EMPLEADO` |
+
+1. Pedí un token:
+
+   ```bash
+   curl -X POST http://localhost:8080/api/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"email": "admin@example.com", "contrasena": "admin"}'
+   ```
+
+   La respuesta trae el token y su tipo: `{"token": "eyJ...", "tipo": "Bearer"}`.
+
+2. Mandalo en cada request con el header `Authorization: Bearer <token>`. En Swagger, pegalo
+   en el botón **Authorize** y queda aplicado a todos los endpoints.
+
+El token vence a los 60 minutos. Sin token, o con uno vencido o inválido, la API responde 401.
+
+| Operación | `EMPLEADO` | `ADMINISTRADOR` |
+|---|---|---|
+| Consultar, crear y modificar (`GET`, `POST`, `PUT`) | Sí | Sí |
+| Eliminar (`DELETE`) | No (403) | Sí |
+
+### Fechas en UTC
+
+La API interpreta todas las fechas y horas en UTC, sin zona horaria en el JSON
+(`2026-12-01T14:30:00`). Las validaciones de "fecha futura" o "fecha pasada" comparan contra la
+hora UTC del servidor, así que el cliente tiene que convertir su hora local antes de enviarla.
+
+### Recursos
+
 | Recurso | Ruta base |
 |---|---|
+| Autenticación | `/api/auth/login` |
 | Vehículos | `/api/vehiculos` |
 | Empleados | `/api/empleados` |
 | Empresas | `/api/empresas` |
@@ -135,8 +178,21 @@ convertir en el borde es además la práctica estándar.
 a códigos HTTP: `RecursoNoEncontradoException` → 404, `ReglaDeNegocioException` → 409, fallas de
 validación → 400 con el detalle por campo, JSON mal formado o con un valor de enum inexistente →
 400, violaciones de restricciones de la base (un duplicado, o borrar un registro que otros
-referencian) → 409, y cualquier otra cosa → 500 con un mensaje genérico y la traza en el log. El
-cliente recibe siempre la misma forma de error y el servidor nunca filtra detalles internos.
+referencian) → 409, un id con formato inválido en la URL → 400, una ruta inexistente → 404, un
+método HTTP no soportado → 405, credenciales incorrectas en el login → 401, y cualquier otra
+cosa → 500 con un mensaje genérico y la traza en el log. Todos esos errores salen con la misma
+forma y el servidor nunca filtra detalles internos. La excepción son los 401 y 403 que emite el
+filtro de seguridad antes de llegar a los controllers (token ausente, inválido o sin permisos):
+hoy salen sin cuerpo, con el detalle en el header `WWW-Authenticate`.
+
+**Autenticación sin estado, con JWT.** El login valida email y contraseña contra la tabla
+`usuarios` (contraseñas con BCrypt) y devuelve un token firmado que lleva el rol adentro. A
+partir de ahí el servidor no guarda sesión: cada request se autentica verificando la firma y el
+vencimiento del token. Para emitir y validar se usa el soporte de JWT que ya trae Spring
+Security (OAuth2 Resource Server) en lugar de una librería aparte y un filtro escrito a mano.
+Los permisos por rol están declarados en un solo lugar, la cadena de filtros de
+`SecurityConfig`. Los usuarios son una tabla separada de los empleados: un usuario es quien
+opera el sistema, un empleado es quien maneja un vehículo.
 
 **El estado del vehículo lo calcula el sistema, no el cliente.** `estadoVehiculo` no aparece en
 los DTOs de entrada: un vehículo nace `DISPONIBLE` y su estado solo cambia por efecto de un uso o
@@ -186,14 +242,17 @@ las migraciones de Flyway se apliquen desde cero.
 
 ## Estado actual
 
-La API está completa: los ocho dominios tienen CRUD, validaciones de negocio y documentación.
-El esquema está versionado con Flyway, la aplicación corre en Docker y cada cambio pasa por CI.
+La API está completa: los ocho dominios tienen CRUD, validaciones de negocio y documentación,
+y todos los endpoints están protegidos con JWT y roles. El esquema está versionado con Flyway,
+la aplicación corre en Docker y cada cambio pasa por CI.
 
 Lo que falta:
 
-- **Autenticación y autorización.** Hoy todos los endpoints son públicos.
-- **Tests de integración** de las consultas de solapamiento contra un PostgreSQL real, con
-  Testcontainers.
+- **Tests de integración** de las consultas de solapamiento y de las reglas de seguridad contra
+  un PostgreSQL real, con Testcontainers.
+- **Errores 401 y 403 con cuerpo JSON**, con la misma forma que el resto de los errores.
+- **Vincular usuarios con empleados**, para tomar el empleado del token en lugar de recibirlo
+  en el cuerpo del request.
 - **Avisos automáticos** de vencimiento de VTV, service y licencias de conducir, que estaban en
   el relevamiento original y requieren tareas programadas.
 - **Frontend.**

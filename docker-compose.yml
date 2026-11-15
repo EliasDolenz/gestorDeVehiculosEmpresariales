@@ -2,7 +2,6 @@ services:
   postgres:
     image: postgres:16
     container_name: gestor-vehiculos-db
-    # CORRECCIÓN: Se agrega 'postgres' al inicio del comando
     command: postgres -c timezone=UTC
     environment:
       POSTGRES_USER: gestor
@@ -33,6 +32,7 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/gestor_vehiculos
       DB_USERNAME: gestor
       DB_PASSWORD: password123
+      JWT_SECRET: 8b69b52613d669dad3f1283a6171c5299da706c0e87157c7f4e6ff6b39851b67
 
 volumes:
   postgres_data:

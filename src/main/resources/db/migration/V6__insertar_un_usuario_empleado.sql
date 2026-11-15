@@ -1,0 +1,1 @@
+INSERT INTO usuarios (email, contrasena, rol) VALUES ('empleado@example.com', '$2a$10$/VxdzbeKWVkl1udj8KylG.NlUdvedsaUiVDGyiBaMyjS05PDSYTwm', 'EMPLEADO');

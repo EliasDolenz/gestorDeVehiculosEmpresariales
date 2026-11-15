@@ -52,7 +52,7 @@ public class UsoService {
             return new RecursoNoEncontradoException("Empleado no encontrado con id: " + unUso.idEmpleado());
         });
 
-        if (reservaRepository.existsOverlappingExcludingSelf(vehiculoReal.getId(),empleadoReal.getId(), LocalDateTime.now(), LocalDateTime.now().plusHours(3))) {
+        if (reservaRepository.existsOverlappingDeOtroEmpleado(vehiculoReal.getId(),empleadoReal.getId(), LocalDateTime.now(), LocalDateTime.now().plusHours(3))) {
             logger.warn("El vehículo con id: " + unUso.idVehiculo() + " tiene una reserva que se superpone con el período de uso solicitado.");
             throw new ReglaDeNegocioException("El vehículo tiene una reserva que se superpone con el período de uso solicitado.");
         }
@@ -149,6 +149,10 @@ public class UsoService {
     public Boolean deleteUso(Long idUso) {
         logger.info("Intentando eliminar el uso con id: " + idUso);
         Uso uso = this.obtenerUsoById(idUso);
+        if (uso.getFechaFinalizacion() == null) {
+            logger.warn("No se puede eliminar el uso con id: " + idUso + " porque aún no ha sido finalizado.");
+            throw new ReglaDeNegocioException("No se puede eliminar un uso que no ha sido finalizado.");
+        }
         this.usoRepository.delete(uso);
         logger.info("Uso con id: " + idUso + " eliminado exitosamente.");
         return Boolean.TRUE;
