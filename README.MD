@@ -18,7 +18,7 @@ control se lleva hoy en planillas y grupo de WhatsApp.
 | ORM | Hibernate |
 | Migraciones | Flyway |
 | Documentación | springdoc-openapi (Swagger UI) |
-| Tests | JUnit 5, Mockito, Spring Boot Test |
+| Tests | JUnit 5, Mockito, Spring Boot Test, Testcontainers |
 | Infraestructura | Docker (build multi-stage) + Docker Compose |
 | CI | GitHub Actions |
 | Build | Maven |
@@ -228,17 +228,29 @@ reservas, recálculo del estado del vehículo según sus novedades, y borrado de
 departamentos asociados. Los repositorios se mockean, así que cada test corre en milisegundos
 sin base de datos.
 
+Además hay tests de integración que levantan la aplicación completa contra un PostgreSQL real.
+La base la arranca el propio test con Testcontainers: un contenedor descartable de PostgreSQL 16
+sobre el que Flyway aplica todas las migraciones desde cero, y que se destruye al terminar.
+Esos tests recorren la cadena de seguridad de punta a punta, con tokens emitidos por el login
+real:
+
+- sin token, la API responde 401;
+- el login con credenciales correctas devuelve el token, y con credenciales incorrectas, 401;
+- un token válido abre los endpoints;
+- un `EMPLEADO` que intenta un `DELETE` recibe 403, y un `ADMINISTRADOR` atraviesa el filtro y
+  llega al service.
+
 ```bash
 ./mvnw test
 ```
 
-El único test que levanta el contexto completo de Spring (`contextLoads`) necesita la base
-corriendo (`docker compose up -d postgres`). Maven ejecuta los tests con la JVM en UTC, igual
-que la aplicación.
+Lo único que hace falta es tener Docker corriendo. No hay que levantar la base del compose ni
+configurar nada: los tests no dependen de ningún servicio prendido de antemano. Maven los
+ejecuta con la JVM en UTC, igual que la aplicación.
 
-Cada push a `main` dispara el pipeline de GitHub Actions, que levanta un PostgreSQL 16 como
-servicio y corre `./mvnw verify`. Como esa base arranca vacía, el CI también comprueba que todas
-las migraciones de Flyway se apliquen desde cero.
+Cada push a `main` dispara el pipeline de GitHub Actions, que corre `./mvnw verify`. Como la
+base de los tests arranca siempre vacía, cada ejecución, local o en el CI, comprueba también
+que las migraciones de Flyway se apliquen desde cero.
 
 ## Estado actual
 
@@ -248,8 +260,8 @@ la aplicación corre en Docker y cada cambio pasa por CI.
 
 Lo que falta:
 
-- **Tests de integración** de las consultas de solapamiento y de las reglas de seguridad contra
-  un PostgreSQL real, con Testcontainers.
+- **Tests de integración de las consultas de solapamiento** de reservas contra un PostgreSQL
+  real. La infraestructura de Testcontainers ya está; hoy cubre las reglas de seguridad.
 - **Errores 401 y 403 con cuerpo JSON**, con la misma forma que el resto de los errores.
 - **Vincular usuarios con empleados**, para tomar el empleado del token en lugar de recibirlo
   en el cuerpo del request.
